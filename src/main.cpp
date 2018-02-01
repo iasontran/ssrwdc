@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------//
 
 #include <avr/io.h>
-#include <SD_Reader.H>
+#include <SD_Reader.h>
 #include "..\lib\SdFat\src\SdFat.h"
 
 
