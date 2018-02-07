@@ -17,13 +17,14 @@
 
 int test(void)
 {
-   USART_Init(MYUBRR); //MYUBRR = 51 for current settings
-
-   while(1)
-   {
-      USART_Transmit('A');
-	  _delay_ms(50);
-   }
+  USART_Init(MYUBRR); //MYUBRR = 51 for current settings
+  char newChar = 'A';
+  while(1)
+  {
+    newChar = USART_receive();
+     USART_Transmit(newChar);
+   _delay_ms(50);
+  }
 }
 
 void USART_Init( unsigned int ubrr)
@@ -46,4 +47,10 @@ void USART_Transmit(unsigned char data)
    while ( !( UCSR0A & (1<<UDRE0)) );
    /* Put data into buffer, sends the data */
    UDR0 = data;
+}
+unsigned char USART_receive(void){
+
+ while(!(UCSR0A & (1<<RXC0)));
+ return UDR0;
+
 }
