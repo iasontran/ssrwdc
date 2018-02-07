@@ -17,14 +17,14 @@
 
 int test(void)
 {
-  USART_Init(MYUBRR); //MYUBRR = 51 for current settings
-  char newChar = 'A';
-  while(1)
-  {
-    newChar = USART_receive();
-     USART_Transmit(newChar);
-   _delay_ms(50);
-  }
+   USART_Init(MYUBRR); //MYUBRR = 51 for current settings
+   char newChar = 'A';
+   while(1)
+   {
+     newChar = USART_receive();
+      USART_Transmit(newChar);
+	  _delay_ms(50);
+   }
 }
 
 void USART_Init( unsigned int ubrr)
