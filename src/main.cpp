@@ -3,37 +3,36 @@
  *
  *
  */
-
-#include <Arduino.h>
-#include <avr/io.h>
 #include <SD_Reader.h>
 //#include "..\lib\SdFat\src\SdFat.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "aes.h"
+#include "aes.hpp"
+#include "serial.h"
 
 static void phex(uint8_t* str);
 static void test_encrypt_cbc(void);
 static void test_decrypt_cbc(void);
 static void test_encrypt_ctr(void);
 static void test_decrypt_ctr(void);
-static void test_encrypt_ecb(void);
-static void test_decrypt_ecb(void);
-static void test_encrypt_ecb_verbose(void);
 
 int main() {
+  sei();
+  initSerial();
 
   while(1) {
-    Serial.println("\nTesting AES256\n");
+    Serial.println("Testing AES256");
     Serial.println("\nTesting CBC encryption: \n");
     test_encrypt_cbc();
     Serial.println("\nTesting CBC decryption: \n");
     test_decrypt_cbc();
+    /*
     Serial.println("\nTesting CTR encryption: \n");
     test_encrypt_ctr();
-    Serial.println("\nTesting CBC decryption: \n");
+    Serial.println("\nTesting CTR decryption: \n");
     test_decrypt_ctr();
+    */
   }
   return 0;
 }
@@ -125,6 +124,8 @@ static void test_encrypt_cbc(void) {
 /*
  * Counter mode related functions.
  */
+
+ /*
 static void test_xcrypt_ctr(const char* xcrypt);
 static void test_encrypt_ctr(void) {
     test_xcrypt_ctr("encrypt");
@@ -164,3 +165,4 @@ static void test_xcrypt_ctr(const char* xcrypt) {
       Serial.println("FAILURE!");
   }
 }
+*/
