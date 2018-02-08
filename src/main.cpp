@@ -12,14 +12,17 @@
 
 #include <avr/io.h>
 #include <SD_Reader.H>
-#include "..\lib\SdFat\src\SdFat.h"
-
+#include <SD.H>
+#include <Arduino.h>
 
 int main(){
+  sei();
+  initiateSDReader();
+  Serial.print("done");
 
 
   while(1){
-
+//Serial.print(",");
   }
 
   return 0;
