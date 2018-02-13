@@ -64,7 +64,7 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 // state - array holding the intermediate results during decryption.
 typedef uint8_t state_t[4][4];
 
-
+// TODO: Create generate functions for sbox and rsbox since current boxes are hardcoded to test plaintext.
 
 // The lookup-tables are marked const so they can be placed in read-only storage instead of RAM
 // The numbers below can be computed dynamically trading ROM for RAM -
