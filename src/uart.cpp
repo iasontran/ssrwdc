@@ -1,19 +1,4 @@
 #include "uart.h"
-#include <avr/io.h>
-
-#define FOSC 16000000 //Clock Speed
-#define BAUD 9600
-#define MYUBRR FOSC/16/BAUD-1
-#define F_CPU 16000000
-
-#include  <avr/io.h>
-#include  <Arduino.h>
-#include  <avr/interrupt.h>
-#include  <util/delay.h>
-// #include
-// #include
-// #include
-
 
 int test(void)
 {
