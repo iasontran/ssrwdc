@@ -27,10 +27,9 @@
    This example code is in the public domain.
 
    */
-
+  // #include <Arduino.h>
   #include <SPI.h>
   #include <SD.h>
-  #include <Arduino.h>
 
   File myFile;
   // set up variables using the SD utility library functions:
@@ -38,9 +37,7 @@
 //so when logic high do nothing
 const int chipSelect = 53;
 
-void initiateSDReader(){
-  sei();
-
+bool initiateSDReader(){
 
   Serial.begin(9600);
 
@@ -53,29 +50,56 @@ void initiateSDReader(){
 
    if (!SD.begin(53)) {
      Serial.println("initialization failed!");
-     return;
+     return 0;
    }
    Serial.println("initialization done.");
+return 1;
+}
+
+void getKey(char* key){
 
    // open the file. note that only one file can be open at a time,
    // so you have to close this one before opening another.
-   myFile = SD.open("test.txt", FILE_WRITE);
-
+   myFile = SD.open("test.txt", FILE_READ);
+   //char key[16];
+   int i = 0;
    // if the file opened okay, write to it:
    if (myFile) {
-     Serial.print("Writing to test.txt...");
-     myFile.println("testing 1, 2, 3.");
- 	// close the file:
-     myFile.close();
-     Serial.println("done.");
-   } else {
-     // if the file didn't open, print an error:
-     Serial.println("error opening test.txt");
-   }
- }
+     Serial.println("Reading from test.txt...");
 
- void loop()
+     while (myFile.available()) {
+         //Serial.print(i);
+         key[i] = myFile.read();
+         Serial.print(key[i]);
+         i++;
+
+
+
+       }
+       Serial.println();
+       Serial.println(key);
+
+
+}
+return;
+     }
+
+bool closeSDReader(){
+ 	// close the file:
+     if(myFile){
+     myFile.close();
+     Serial.println("closed");
+  return 1;
+}
+  else{
+  Serial.println("no file is open");
+return 0;
+}
+return 0;
+
+}
+ /*void loop()
  {
    Serial.println("loop");
  	// nothing happens after setup
- }
+}*/

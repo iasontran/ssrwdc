@@ -9,21 +9,45 @@
 //
 // Requirements:
 //----------------------------------------------------------------------//
-
-#include <avr/io.h>
-#include <SD_Reader.H>
-#include <SD.H>
 #include <Arduino.h>
 
-int main(){
+#include <avr/io.h>
+#include "timer.h"
+//#include <>
+#include <SD_Reader.H>
+//#include <SD.H>
+//#include <WProgram.h>
+
+int main(void){
+
+  init();
   sei();
   initiateSDReader();
   Serial.print("done");
+  char x[64];
+  getKey(x);
+  closeSDReader();
+  Serial.println();
+  int j = 0;
+while (x[j]){
+  Serial.print(x[j]);
+  j++;
+//  Serial.print(j);
+}
+Serial.println("\ndone printing var");
 
+while(1){}
+//for(;;){
+//  loop();
+//}
 
-  while(1){
-//Serial.print(",");
-  }
 
   return 0;
+}
+
+
+
+void loop(){
+  unsigned long z = millis();
+  Serial.println(z);
 }
