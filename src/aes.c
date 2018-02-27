@@ -243,6 +243,51 @@ static void SubBytes(state_t* state) {
   }
 }
 
+
+
+/*
+ * Perform multiplication between x and y in Galois Field GF(2^8) and divide by
+ * reduction polynomial (x^8 + x^4 + x^3 + x + 1), 0x11B in hex
+ */
+
+uint8_t mulGF(uint8_t x, uint8_t y) {
+  uint8_t product = 0;
+
+  for (uint_fast8_t i = 0; i < 8u; i++) {
+    if (i == 0) {
+      if (y & 1) {
+        product ^= x;
+      }
+    }
+    else {
+      product ^= (-(y & 1u)) & x;
+    }
+    x = (x << 1u) ^ ((-(x >= 0x80u)) & 0x1Bu);
+    y >>= 1;
+  }
+
+  return product;
+}
+
+/*
+ * Calculate inverse of GF(2^8)
+ *
+ */
+uint8_t invGF(uint8_t x) {
+
+}
+
+
+// Generates lookup table for SBox
+static void generateSBox(uint8_t x) {
+
+}
+
+// Generate lookup table for inverse SBox
+static void generateRSBox(uint8_t x) {
+
+}
+
 // The ShiftRows() function shifts the rows in the state to the left.
 // Each row is shifted with different offset.
 // Offset = Row number. So the first row is not shifted.
