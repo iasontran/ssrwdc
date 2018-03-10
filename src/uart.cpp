@@ -1,17 +1,5 @@
 #include "uart.h"
 
-int test(void)
-{
-   USART_Init(MYUBRR); //MYUBRR = 51 for current settings
-   char newChar = "A";
-   while(1)
-   {
-     //newChar = Serial.read();
-     newChar = USART_receive();
-      USART_Transmit(newChar);
-	  _delay_ms(50);
-   }
-}
 
 void USART_Init( unsigned int ubrr)
 {
@@ -27,16 +15,39 @@ void USART_Init( unsigned int ubrr)
 
 }
 
-void USART_Transmit(unsigned char data)
+void USART0_Transmit(uint8_t data)
 {
    /* Wait for empty transmit buffer */
    while ( !( UCSR0A & (1<<UDRE0)) );
    /* Put data into buffer, sends the data */
    UDR0 = data;
 }
-unsigned char USART_receive(void){
+uint8_t USART0_receive(void){
 
  while(!(UCSR0A & (1<<RXC0)));
  return UDR0;
 
+}
+void USART1_Transmit(uint8_t data)
+{
+   /* Wait for empty transmit buffer */
+   while ( !( UCSR1A & (1<<UDRE1)) );
+   /* Put data into buffer, sends the data */
+   UDR1 = data;
+}
+uint8_t USART1_receive(void){
+
+ while(!(UCSR1A & (1<<RXC1)));
+ return UDR1;
+
+}
+void USART0_Flush( void )
+{
+uint8_t dummy;
+while ( UCSR0A & (1<<RXC0) ) dummy = UDR0;
+}
+void USART1_Flush( void )
+{
+uint8_t dummy;
+while ( UCSR1A & (1<<RXC1) ) dummy = UDR1;
 }

@@ -18,8 +18,10 @@
 #endif
 
 void USART_Init(unsigned int ubrr);
-void USART_Transmit(unsigned char data);
-unsigned char USART_receive(void);
-int test(void);
-
+void USART0_Transmit(unsigned char data);
+unsigned char USART0_receive(void);
+void USART1_Transmit(unsigned char data);
+unsigned char USART1_receive(void);
+void USART0_Flush( void );
+void USART1_Flush( void );
 #endif
