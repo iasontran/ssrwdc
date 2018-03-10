@@ -1,9 +1,11 @@
 #ifndef UART_H
 #define UART_H
+#include  <Arduino.h>
+#include <stdio.h>
 #include  <avr/interrupt.h>
 #include  <util/delay.h>
 #include  <avr/io.h>
-
+#include <SoftwareSerial.h>
 #define FOSC 16000000 //Clock Speed
 #ifndef BAUD
 #define BAUD 9600

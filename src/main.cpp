@@ -4,7 +4,7 @@
  *
  */
 #include "SD_Reader.h"
-#include  <Arduino.h>
+
 //#include "..\lib\SdFat\src\SdFat.h"
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +22,8 @@ static void test_decrypt_ctr(void);
 int main() {
   sei();
   initSerial();
+
+  
 
   while(1) {
     Serial.println("Testing AES256");

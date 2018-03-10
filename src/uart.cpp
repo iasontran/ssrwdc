@@ -3,9 +3,10 @@
 int test(void)
 {
    USART_Init(MYUBRR); //MYUBRR = 51 for current settings
-   char newChar = 'A';
+   char newChar = "A";
    while(1)
    {
+     //newChar = Serial.read();
      newChar = USART_receive();
       USART_Transmit(newChar);
 	  _delay_ms(50);
@@ -14,16 +15,16 @@ int test(void)
 
 void USART_Init( unsigned int ubrr)
 {
-   /* Set baud rate */
-   UBRR0H = (unsigned char)(ubrr>>8);
-   UBRR0L = (unsigned char)ubrr;
+  UBRR0H = (unsigned char)(ubrr>>8);
+  UBRR0L = (unsigned char)ubrr;
+  UCSR0B = (1<<RXEN0)|(1<<TXEN0);;//enable rx tx
+  UCSR0C = (1<<UCSZ00) | (1 << UCSZ01);//8 data 1 stop
 
-   /* Enable receiver and transmitter */
-   UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-   /* Set frame format: 8data, 2stop bit */
-  // UCSR0C = (1<<USBS0)|(3<<UCSZ00);
+  UBRR1H = (unsigned char)(ubrr>>8);
+  UBRR1L = (unsigned char)ubrr;
+  UCSR1B = (1<<RXEN1)|(1<<TXEN1);;//enable rx tx
+  UCSR1C = (1<<UCSZ10) | (1 << UCSZ11);//8 data 1 stop
 
-    UCSR0C = (!(1<<USBS0))|(1<<UCSZ01)|(1<<UCSZ00);
 }
 
 void USART_Transmit(unsigned char data)
