@@ -33,6 +33,7 @@ int main() {
   displayOn();
   received_cnt = 0;
 
+writeString("CBC decrypt: ");
   while(1) {
     /*
     writeString("CBC encrypt: ");
@@ -40,7 +41,8 @@ int main() {
     test_encrypt_cbc();
     */
 
-    writeString("CBC decrypt: ");
+
+    /*
     cursorDown();
     if (received_cnt == 64) {
       test_decrypt_cbc();
@@ -48,6 +50,7 @@ int main() {
     }
 
     clearDisplay();
+    */
   }
   return 0;
 }
