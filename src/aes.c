@@ -274,19 +274,38 @@ uint8_t mulGF(uint8_t x, uint8_t y) {
  *
  */
 uint8_t invGF(uint8_t x) {
+  static const uint8_t addChain[11u] = { 0, 1, 1, 3, 4, 3, 6, 7, 3, 9, 1 };
+  uint8_t prevVal[11u];
 
+  for (uint_fast8_t i = 0; i < 11u; i++) {
+    prevVal[i] = x;
+    x = mulGF(x, prevVal[addChain[i]]);
+  }
+
+  return x;
 }
 
 
 // Generates lookup table for SBox
-static void generateSBox(uint8_t x) {
+uint8_t generateSBox(uint8_t x) {
+  uint8_t y;
 
+  x = invGF(x);
+
+  // Rotate left
+  y = ((x << 1u) | (x >> (8u - 1u)));
+  // Rotate left
+  y ^= ((y << 1u) | (y >> (8u - 1u)));
+  // Rotate left
+  y ^= ((y << 2u) | (y >> (8u - 2u)));
+
+  return x ^ y ^ 0x63u;
 }
 
-// Generate lookup table for inverse SBox
-static void generateRSBox(uint8_t x) {
-
-}
+// // Generate lookup table for inverse SBox
+// uint8_t generateRSBox(uint8_t x) {
+//
+// }
 
 // The ShiftRows() function shifts the rows in the state to the left.
 // Each row is shifted with different offset.

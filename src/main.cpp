@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include "aes.hpp"
 #include "serial.h"
+#include "timer.h"
+#include "lcd.h"
 
 
 static void phex(uint8_t* str);
@@ -18,23 +20,34 @@ static void test_encrypt_cbc(void);
 static void test_decrypt_cbc(void);
 static void test_encrypt_ctr(void);
 static void test_decrypt_ctr(void);
+volatile uint8_t received;
+volatile uint8_t received_block[64];
+volatile int received_cnt;
 
 int main() {
   sei();
   initSerial();
+  initTimer1();
+  initTimer0();
+  initLCD();
+  displayOn();
+  received_cnt = 0;
 
   while(1) {
-    Serial.println("Testing AES256");
-    Serial.println("\nTesting CBC encryption: \n");
-    test_encrypt_cbc();
-    Serial.println("\nTesting CBC decryption: \n");
-    test_decrypt_cbc();
     /*
-    Serial.println("\nTesting CTR encryption: \n");
-    test_encrypt_ctr();
-    Serial.println("\nTesting CTR decryption: \n");
-    test_decrypt_ctr();
+    writeString("CBC encrypt: ");
+    cursorDown();
+    test_encrypt_cbc();
     */
+
+    writeString("CBC decrypt: ");
+    cursorDown();
+    if (received_cnt == 64) {
+      test_decrypt_cbc();
+      received_cnt = 0;
+    }
+
+    clearDisplay();
   }
   return 0;
 }
@@ -72,6 +85,10 @@ static void test_decrypt_cbc(void) {
                     0xf6, 0x9f, 0x24, 0x45, 0xdf, 0x4f, 0x9b, 0x17, 0xad, 0x2b, 0x41, 0x7b, 0xe6, 0x6c, 0x37, 0x10 };
 
   //  uint8_t buffer[64];
+    for (unsigned int i = 0; i < sizeof(received_block); i++) {
+      in[i] = received_block[i];
+    }
+
 
     /* Ciphertext */
     struct AES_ctx ctx;
@@ -79,14 +96,13 @@ static void test_decrypt_cbc(void) {
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CBC_decrypt_buffer(&ctx, in, 64);
 
-    Serial.print("CBC decryption outcome: ");
-
     if (0 == memcmp((char*) out, (char*) in, 64)) {
-        Serial.println("SUCCESS!");
+        writeString("SUCCESS!");
     }
     else {
-        Serial.println("FAILURE!");
+        writeString("FAILURE!");
     }
+    clearDisplay();
 }
 
 /*
@@ -112,17 +128,29 @@ static void test_encrypt_cbc(void) {
 
   AES_init_ctx_iv(&ctx, key, iv);
   AES_CBC_encrypt_buffer(&ctx, in, 64);
+  transmit_data(in);
 
-  Serial.print("CBC encrypt: ");
+  // writeString("CBC encrypt: ");
+  // cursorDown();
 
   if (0 == memcmp((char*) out, (char*) in, 64)) {
-      Serial.println("SUCCESS!");
+      writeString("SUCCESS!");
   }
   else {
-      Serial.println("FAILURE!");
+      writeString("FAILURE!");
   }
 }
 
+ISR(USART0_RX_vect){
+  unsigned char *test;
+  if (received_cnt != 64) {
+    received = receive_data();
+    received_block[received_cnt] = received;
+    received_cnt++;
+    test = received;
+    writeTest(test);
+  }
+}
 /*
  * Counter mode related functions.
  */
