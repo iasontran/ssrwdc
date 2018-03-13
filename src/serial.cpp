@@ -1,7 +1,12 @@
+
 #include "serial.h"
+
 void initSerial(){
-  USART_Init(MYUBRR);
+  UBRR0L = 103; // Baud rate 9600
+  UCSR0B |= (1 << RXEN0 | 1 << TXEN0 | 1 << RXCIE0);// | 1 << RXCIE0); // Enable receiver and transmitter
+  UCSR0C = (1 << USBS0) | (3 << UCSZ00); // Set frame format: 8 data, 2 stop bits
 }
+<<<<<<< HEAD
 void Serial_putString(const char str1[]){
   uint8_t i = 0;
   while (str1[i]) {
@@ -49,3 +54,32 @@ void convertToAscii(uint8_t byte) {
   USART0_Transmit('0' + ((byte / 10) % 10));
   USART0_Transmit('0' + (byte % 10));
 }
+=======
+
+void transmit_data(uint8_t data[]){
+  int i = 0;
+
+  while (data[i] != 0x00) {
+    transmit_part(data[i]);
+    i++;
+  }
+  
+}
+
+void transmit_part(uint8_t data) {
+  while(!(UCSR0A & (1 << UDRE0))); // Wait for empty transmit buffer
+
+
+  UDR0 = data; // Put data into buffer, sends the data
+}
+
+unsigned char receive_data(){
+  //while(!(UCSR0A & (1 << RXC0))); // Wait for data to be received
+  return UDR0; // Get and return received data from buffer
+}
+
+//void flush_data(){
+  //unsigned char dummy;
+  //while(UCSR0A & (1 << RXC0)) dummy = UDR0;
+//}
+>>>>>>> 86ef2a16af433e9794dcadf98fee3a3631927799
