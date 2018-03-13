@@ -89,7 +89,7 @@ static void test_decrypt_cbc(void) {
 
   //  uint8_t buffer[64];
     for (unsigned int i = 0; i < sizeof(received_block); i++) {
-      in[i] = received_block[i];
+      *in[i] = &received_block[i];
     }
 
 
