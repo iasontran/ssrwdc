@@ -4,17 +4,21 @@
 //----------------------------------------------------------------------//
 #include "adc.h"
 #include <Arduino.h>
-
+#include <util/delay.h>
 
 int main(){
   sei();
   setUpADC();
-
+  setUpDAC();
   Serial.begin(9600);
   uint8_t adcValue = 0;
   while(1){
-    adcValue = 0x00;
-    adcValue = adcValue | ADCH;
-    Serial.println(adcValue, BIN);
+
+    adcValue = ADCH;
+    PORTA = adcValue;
+    PORTC &= ~(1 << PORTC7);
+    _delay_us(125); //// need to adjust delay depending on how much delay comes
+    // from the other programs
+    PORTC |= (1 << PORTC7);
 }
 }

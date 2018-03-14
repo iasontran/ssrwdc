@@ -7,5 +7,5 @@
 #define ADC_H
 
 void setUpADC();
-
+void setUpDAC();
 #endif

@@ -7,7 +7,10 @@
 #include <util/delay.h>
 #include "ADC.h"
 
-
+void setUpDAC(){
+  DDRA |= (1 << DDA0) | (1 << DDA1) | (1 << DDA2) | (1 << DDA3) | (1 << DDA4) | (1 << DDA5) | (1 << DDA6) | (1 << DDA7);
+  DDRC |= (1 << DDC7);
+}
 void setUpADC(){
 
 //AREF set to reference voltage (5V)
@@ -27,8 +30,8 @@ ADCSRB &= ~(1 << ADTS2 | 1 << ADTS1 | 1 << ADTS0);
 // enable auto triggering and turn on ADC
 ADCSRA |= (1 << ADATE) | (1 << ADEN);
 
-// set the pre-scaler to 2 **NEED TO TEST THIS SPEED**
-ADCSRA |= ~(1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+// set the pre-scaler to 128 which should be ~9600 hz for sample freq
+ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 
 //disable ADC pin 0 digital input
 DIDR0 |= (1 << ADC0D);
