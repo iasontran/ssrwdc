@@ -13,7 +13,7 @@
 #include "serial.h"
 #include "timer.h"
 #include "lcd.h"
-
+#include "led.h"
 
 static void phex(uint8_t* str);
 static void test_encrypt_cbc(void);
@@ -31,23 +31,27 @@ int main() {
   initTimer0();
   initLCD();
   displayOn();
+  initLED();
   received_cnt = 0;
+  //test_encrypt_cbc();
 
   while(1) {
-    /*
-    writeString("CBC encrypt: ");
-    cursorDown();
-    test_encrypt_cbc();
-    */
 
+    //writeString("CBC encrypt: ");
+    //cursorDown();
+    test_encrypt_cbc();
+
+    /*
     writeString("CBC decrypt: ");
     cursorDown();
+
     if (received_cnt == 64) {
       test_decrypt_cbc();
       received_cnt = 0;
     }
 
     clearDisplay();
+    */
 
   }
   return 0;
@@ -86,24 +90,30 @@ static void test_decrypt_cbc(void) {
                     0xf6, 0x9f, 0x24, 0x45, 0xdf, 0x4f, 0x9b, 0x17, 0xad, 0x2b, 0x41, 0x7b, 0xe6, 0x6c, 0x37, 0x10 };
 
   //  uint8_t buffer[64];
-  uint8_t stored[64];
+  uint8_t stored[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+    /*
     for (unsigned int i = 0; i < sizeof(received_block); i++) {
       stored[i] = received_block[i];
     }
+    */
 
-
-    /* Ciphertext */
+    /* Ciphertext object */
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_decrypt_buffer(&ctx, stored, 64);
+    AES_CBC_decrypt_buffer(&ctx, received_block, 64);
 
-    if (0 == memcmp((char*) out, (char*) stored, 64)) {
-        writeString("SUCCESS!");
+    if (0 == memcmp((char*) out, (char*) received_block, 64)) {
+        // writeString("SUCCESS!");
     }
     else {
-        writeString("FAILURE!");
+        // writeString("FAILURE!");
     }
+
 }
 
 /*
@@ -133,24 +143,26 @@ static void test_encrypt_cbc(void) {
 
   // writeString("CBC encrypt: ");
   // cursorDown();
-
+  /*
   if (0 == memcmp((char*) out, (char*) in, 64)) {
       writeString("SUCCESS!");
   }
   else {
       writeString("FAILURE!");
   }
+  */
 }
 
 ISR(USART0_RX_vect){
-  // unsigned char *test;
+
   if (received_cnt != 64) {
+    LED_On();
     received = receive_data();
     received_block[received_cnt] = received;
     received_cnt++;
-    // test = received;
-    // writeTest(test);
+    LED_Off();
   }
+
 }
 /*
  * Counter mode related functions.

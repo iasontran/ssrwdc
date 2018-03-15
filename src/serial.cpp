@@ -14,7 +14,7 @@ void transmit_data(uint8_t data[]){
     transmit_part(data[i]);
     i++;
   }
-  
+
 }
 
 void transmit_part(uint8_t data) {
@@ -24,7 +24,7 @@ void transmit_part(uint8_t data) {
   UDR0 = data; // Put data into buffer, sends the data
 }
 
-unsigned char receive_data(){
+uint8_t receive_data(){
   //while(!(UCSR0A & (1 << RXC0))); // Wait for data to be received
   return UDR0; // Get and return received data from buffer
 }

@@ -9,7 +9,7 @@
 void initSerial();
 void transmit_data(uint8_t data[]);
 void transmit_part(uint8_t data);
-unsigned char receive_data();
+uint8_t receive_data();
 void flush_data();
 
 #endif
