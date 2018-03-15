@@ -33,13 +33,17 @@
 
   File myFile;
   // set up variables using the SD utility library functions:
-//use A17 portk7 as pull-up resistor. when logic low card is inserted
+//use A17 portk7 pin 23 as pull-up resistor. when logic low card is inserted
 //so when logic high do nothing
 const int chipSelect = 53;
 
 bool initiateSDReader(){
 
   Serial.begin(9600);
+  PCICR |= 1 << PCIE2; //enable pins 23-16
+  PCMSK2 |= 1 << PCINT23; // enable pin 23
+  DDRK &= ~(1<< DDK7);
+  PORTK |= (1 << PORTK7); //internal pullup resistor
 
    Serial.print("Initializing SD card...");
    // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
@@ -68,16 +72,16 @@ void getKey(char* key){
      Serial.println("Reading from test.txt...");
 
      while (myFile.available()) {
-         //Serial.print(i);
+         ////Serial.print(i);
          key[i] = myFile.read();
-         Serial.print(key[i]);
+         //Serial.print(key[i]);
          i++;
 
 
 
        }
-       Serial.println();
-       Serial.println(key);
+       //Serial.println();
+       //Serial.println(key);
 
 
 }
@@ -88,7 +92,7 @@ bool closeSDReader(){
  	// close the file:
      if(myFile){
      myFile.close();
-     Serial.println("closed");
+     //Serial.println("closed");
   return 1;
 }
   else{
@@ -100,6 +104,47 @@ return 0;
 }
  /*void loop()
  {
-   Serial.println("loop");
+   //Serial.println("loop");
  	// nothing happens after setup
 }*/
+
+void sdWrite(char* fileName, char* value){
+
+  myFile = SD.open("JAKE.txt",FILE_WRITE);
+ if (myFile){
+  myFile.println(value);
+  myFile.close();
+  Serial.print("writing to: ");
+  Serial.println(fileName);
+
+}
+else{
+
+Serial.print("error file with name: ");
+Serial.print(fileName);
+Serial.print(" not created");
+
+
+}
+
+}
+void sdRead(char* fileName){
+
+  if (myFile){
+    myFile.close();
+  }
+  myFile = SD.open("testFile.txt",FILE_READ);
+  if (myFile) {
+    Serial.print("Reading from ");
+    Serial.println(fileName);
+    char* val;
+    int i = 0;
+    while (myFile.available()) {
+        val[i] = myFile.read();
+        Serial.print(val[i]);
+        i++;
+        //Serial.print(key[i]);
+}
+}
+
+      }

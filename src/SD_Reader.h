@@ -18,5 +18,7 @@ using namespace std;
 bool initiateSDReader();
 bool closeSDReader();
 void getKey(char* key);
+void sdWrite(char* fileName, char* value);
+void sdRead(char* fileName);
 
 #endif
