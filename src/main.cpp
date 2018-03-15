@@ -33,7 +33,6 @@ int main() {
   displayOn();
   received_cnt = 0;
 
-writeString("CBC decrypt: ");
   while(1) {
     /*
     writeString("CBC encrypt: ");
@@ -41,8 +40,7 @@ writeString("CBC decrypt: ");
     test_encrypt_cbc();
     */
 
-
-    /*
+    writeString("CBC decrypt: ");
     cursorDown();
     if (received_cnt == 64) {
       test_decrypt_cbc();
@@ -50,7 +48,7 @@ writeString("CBC decrypt: ");
     }
 
     clearDisplay();
-    */
+
   }
   return 0;
 }
@@ -88,8 +86,9 @@ static void test_decrypt_cbc(void) {
                     0xf6, 0x9f, 0x24, 0x45, 0xdf, 0x4f, 0x9b, 0x17, 0xad, 0x2b, 0x41, 0x7b, 0xe6, 0x6c, 0x37, 0x10 };
 
   //  uint8_t buffer[64];
+  uint8_t stored[64];
     for (unsigned int i = 0; i < sizeof(received_block); i++) {
-      *in[i] = &received_block[i];
+      stored[i] = received_block[i];
     }
 
 
@@ -97,15 +96,14 @@ static void test_decrypt_cbc(void) {
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_decrypt_buffer(&ctx, in, 64);
+    AES_CBC_decrypt_buffer(&ctx, stored, 64);
 
-    if (0 == memcmp((char*) out, (char*) in, 64)) {
+    if (0 == memcmp((char*) out, (char*) stored, 64)) {
         writeString("SUCCESS!");
     }
     else {
         writeString("FAILURE!");
     }
-    clearDisplay();
 }
 
 /*
@@ -131,7 +129,7 @@ static void test_encrypt_cbc(void) {
 
   AES_init_ctx_iv(&ctx, key, iv);
   AES_CBC_encrypt_buffer(&ctx, in, 64);
-  transmit_data(in);
+  transmit_data(out);
 
   // writeString("CBC encrypt: ");
   // cursorDown();
@@ -145,13 +143,13 @@ static void test_encrypt_cbc(void) {
 }
 
 ISR(USART0_RX_vect){
-  unsigned char *test;
+  // unsigned char *test;
   if (received_cnt != 64) {
     received = receive_data();
     received_block[received_cnt] = received;
     received_cnt++;
-    test = received;
-    writeTest(test);
+    // test = received;
+    // writeTest(test);
   }
 }
 /*

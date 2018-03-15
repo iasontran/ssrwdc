@@ -141,13 +141,13 @@ void writeString(const char *string){
     writeCharacter(string[i]);
   }
 }
-
+/*
 void writeTest(unsigned char *test) {
   for (unsigned int i = 0; test[i] != '\0'; i++) {
     writeCharacter(test[i]);
   }
 }
-
+*/
 /* This is the procedure outline on the LCD datasheet page 4 out of 9.
 * This should be the last function you write as it largely depends on all other
 * functions working.
