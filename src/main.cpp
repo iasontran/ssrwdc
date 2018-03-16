@@ -10,7 +10,8 @@
 // Requirements:
 //----------------------------------------------------------------------//
 #include <Arduino.h>
-
+#include "adc.h"
+#include <util/delay.h>
 #include <avr/io.h>
 #include "timer.h"
 //#include <>
@@ -24,9 +25,12 @@ bool programExecuted = false;
 int keySize = 32; //32 bytes 256 bits
 int state = 0; // set state 0
 int main(void){
-
+    sei();
+  setUpADC();
+  setUpDAC();
+ // Serial.begin(9600);
+  uint8_t adcValue = 0;
   init();
-  sei();
 
   char x[keySize];
   uint8_t key[keySize];
@@ -38,6 +42,14 @@ int main(void){
 
       int n = 0;
 write(fileName,fileValue);
+}
+while(1){
+   adcValue = ADCH;
+    PORTA = adcValue;
+    PORTC &= ~(1 << PORTC7);
+    _delay_us(125); //// need to adjust delay depending on how much delay comes
+    // from the other programs
+    PORTC |= (1 << PORTC7);
 }
     /*
 while(1){
@@ -123,3 +135,4 @@ ISR (PCINT2_vect){
 
 }
 */
+
