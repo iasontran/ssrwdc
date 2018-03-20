@@ -42,14 +42,19 @@ int main(void){
 
       int n = 0;
 write(fileName,fileValue);
-}
+
 while(1){
+
    adcValue = ADCH;
     PORTA = adcValue;
+    fileValue = adcValue;
+    write(fileName,fileValue);
+
     PORTC &= ~(1 << PORTC7);
     _delay_us(125); //// need to adjust delay depending on how much delay comes
     // from the other programs
     PORTC |= (1 << PORTC7);
+}
 }
     /*
 while(1){
@@ -135,4 +140,3 @@ ISR (PCINT2_vect){
 
 }
 */
-
