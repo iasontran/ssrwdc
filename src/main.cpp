@@ -13,42 +13,24 @@
 #include "adc.h"
 #include <util/delay.h>
 #include <avr/io.h>
-#include "timer.h"
-//#include <>
-#include <SD_Reader.H>
-#include <SD_writer.H>
-//#include <SD.H>
-//#include <WProgram.h>
+#include "usart.h"
 
-bool programExecuted = false;
-    bool written = false;
-int keySize = 32; //32 bytes 256 bits
-int state = 0; // set state 0
+
 int main(void){
     sei();
   setUpADC();
   setUpDAC();
  // Serial.begin(9600);
   uint8_t adcValue = 0;
-  init();
-
-  char x[keySize];
-  uint8_t key[keySize];
-  int j,i;
-  char* fileName = "Write.txt"; //File name here, must be small
-  char* fileValue = "Custom words";//whatever you want to write here
 
 
 
-      int n = 0;
-write(fileName,fileValue);
 
 while(1){
 
-   adcValue = ADCH;
+    adcValue = ADCH;
     PORTA = adcValue;
-    fileValue = adcValue;
-    write(fileName,fileValue);
+    transmit_part(adcValue);
 
     PORTC &= ~(1 << PORTC7);
     _delay_us(125); //// need to adjust delay depending on how much delay comes
