@@ -16,25 +16,21 @@ int main() {
 
     // char newChar = 'A';
     // //char newChar ='B';
-    char inputString[100] = "this is the message to transmit \n\0";
-
-    char inputString1[100] = "A \n\0";
-    char inputString2[100] = "B \n\0";
-    char inputString3[100] = "c \n\0";
+    char inputString1[13] = "Hello world \0";
+    char inputString2[13] = "print Bowen \0";
+    char str[13] = "";
 
     while(1)
     {
-      // //newChar = USART1_receive();
-      //  USART0_Transmit(newChar);
-      //  USART1_Transmit(newChar);
-      Serial_putString(inputString);
-      _delay_ms(50);
-      Serial_putString(inputString1);
-      _delay_ms(50);
-      Serial_putString(inputString2);
-      _delay_ms(50);
-      Serial_putString(inputString3);
-      _delay_ms(50);
+
+      Serial_getString(str,13);
+      Serial_putString(str);
+      //USART0_Transmit(newChar);
+      _delay_ms(1000);
+      // Serial_putString(inputString2);
+      // // USART0_Transmit('B');
+      //  _delay_ms(1000);
+
     }
   return 0;
 }

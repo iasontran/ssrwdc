@@ -1,4 +1,3 @@
-//Author:
 // Author:         Garrett Vanhoy
 // Net ID:         gvanhoy
 // Date:           28 January 2017
@@ -10,7 +9,7 @@
 
 #include <avr/io.h>
 
-void initTimer1();
+void initTimer0();
 void delayUs(unsigned int delay);
 
 #endif

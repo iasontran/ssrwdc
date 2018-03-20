@@ -7,6 +7,9 @@ void Serial_putString(const char str1[]){
   while (str1[i]) {
     USART0_Transmit((str1[i]));
     i++;
+    if(str1[i] == "\n"){
+      return;
+    }
   }
 }
 void Serial_getString(char str2[], uint8_t strLength){
@@ -15,7 +18,7 @@ void Serial_getString(char str2[], uint8_t strLength){
   i = 0;
   while (i < (strLength - 1)) {
     newChar = USART0_receive();
-    //USART0_Transmit(newChar);
+    USART0_Transmit(newChar);
     if (newChar == '\0') {
       break;
     }
