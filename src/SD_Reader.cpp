@@ -1,7 +1,7 @@
 // Author:
 // Net ID:
 // Date:
-// Assignment:     Lab 4
+// Assignment:     sswrdc
 //
 //
 // Requirements:
@@ -19,11 +19,20 @@
 
   #include <SPI.h>
   #include <SD.h>
+  #include "timer.h"
   File myFile;
 //Set up variables using the SD utility library functions:
 //use A17 portk7 pin 23 as pull-up resistor. when logic low card is inserted
 //so when logic high do nothing
 const int chipSelect = 53;
+
+//begin Glabal Variavles//
+bool programExecuted = false;
+bool written = false;
+const int keySize = 32; //32 bytes 256 bits
+
+//end Glabal Variables//
+
 
 bool initiateSDReader(){
 
@@ -128,3 +137,57 @@ void sdRead(char* fileName){
 }
 
       }
+void changeState(int currState){
+//state = currState;
+
+}
+void programExec(bool programExec){
+  programExecuted = programExec;
+}
+
+void setKey(uint8_t* key ){
+
+  char x[keySize]; //Holds key in char format
+  int j,i; //loop variables
+
+
+      if(!initiateSDReader()){
+          return; //If the SDReader isnt properly initialized try again
+        }
+      delayMs(1000); // delay to allow sd card to be read
+      getKey(x);
+      closeSDReader();
+      Serial.println("\nWhat the Function Returns:"); //output for debugging
+      j = 0; //Set loop variable to 0
+      while (j<keySize){
+        Serial.print(x[j]); //print out each value of x up to the keySize
+        key[j] = (uint8_t)(x[j]);
+        j++;
+
+//  Serial.print(j);
+      }
+      i = 0; //set loop value to zero
+      Serial.println("\nWhat it returns in uint8_t format:"); //output for debugging
+      while(i<keySize){
+        Serial.print(key[i]);
+        i++;
+      }
+
+      Serial.println("\ndone printing var");
+      Serial.println("program has executed...");
+      programExecuted = true; //program has executed properly
+                              //Key should now be stored in both 'x' and 'key'
+
+      return;
+
+
+} //end while
+
+
+
+int getKeySize(){
+  return keySize;
+}
+bool isProgramExecuted(){
+  return programExecuted;
+}
