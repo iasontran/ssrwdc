@@ -42,12 +42,15 @@ while(1){
 
   switch(state){
     case 0:
+
     setKey(key);
     if(!isProgramExecuted())
     {
+
       state = 0;
       break;
     } //end if
+      PORTG &= ~(1<<PORTG5);
     state = 1;
     break;
 /////////end case 0//////////////
@@ -55,11 +58,13 @@ case 1:
 
     if (!isProgramExecuted())
     {
+
       state = 0;  //If program hasnt executed properly go to state 0
       break;
     }//end if
     else
      {
+       PORTG |= (1<<PORTG5);
       Serial.print("."); //Wait
       delay(1000);
         break;
@@ -75,7 +80,7 @@ return 0;
 
 //Interupt based on the card detect pin, when High do nothing//
 ISR (PCINT2_vect){
-
+PORTG &= ~(1<<PORTG5);
   Serial.println("ERROR!!!:  \n No Card Inserted!");
     programExec(false); //if the card is removed reset program till
                               //card is inserted

@@ -16,6 +16,9 @@
    ** DO - PIN 50
    **DI - PIN51
 */
+/*
+led indicator light goes into port g5 (pin 5 arduino mega)
+*/
 
   #include <SPI.h>
   #include <SD.h>
@@ -52,9 +55,11 @@ bool initiateSDReader(){
 /*Self Explanatory below*/
    if (!SD.begin(53)) {
      Serial.println("initialization failed!");
+
      return 0;
    }
    Serial.println("initialization done.");
+
 return 1;
 }
 /**/
@@ -137,14 +142,10 @@ void sdRead(char* fileName){
 }
 
       }
-void changeState(int currState){
-//state = currState;
 
-}
 void programExec(bool programExec){
   programExecuted = programExec;
 }
-
 void setKey(uint8_t* key ){
 
   char x[keySize]; //Holds key in char format
@@ -175,7 +176,7 @@ void setKey(uint8_t* key ){
 
       Serial.println("\ndone printing var");
       Serial.println("program has executed...");
-      programExecuted = true; //program has executed properly
+      programExec(true); //program has executed properly
                               //Key should now be stored in both 'x' and 'key'
 
       return;
@@ -189,5 +190,15 @@ int getKeySize(){
   return keySize;
 }
 bool isProgramExecuted(){
+/*  if (programExecuted)
+  {
+      PORTG |= (1<<PORTG5);
+  }
+  else
+  {
+      PORTG &= ~(1<<PORTG5);
+  }
+*/
+
   return programExecuted;
 }
