@@ -4,30 +4,26 @@ void initSerial(){
 }
 void Serial_putString(const char str1[]){
   uint8_t i = 0;
-  while (str1[i]) {
+  for (i = 0; i < 14; i++) {
     USART0_Transmit((str1[i]));
-    i++;
-    if(str1[i] == "\n"){
-      return;
-    }
+    //if(str1[i] == "\n"){
+    //  return;
+    //}
   }
 }
 void Serial_getString(char str2[], uint8_t strLength){
   char newChar;
   uint8_t i;
-  i = 0;
-  while (i < (strLength - 1)) {
+  for (i = 0; i < strLength; i++) {
     newChar = USART0_receive();
-    USART0_Transmit(newChar);
+    //USART0_Transmit(newChar);
     if (newChar == '\0') {
       break;
     }
-    else {
+    else
       str2[i] = newChar;
-      i++;
-    }
   }
-  str2[i] = 0;
+  str2[13] = '\0';
 }
 
 uint8_t convertToByte(void) {

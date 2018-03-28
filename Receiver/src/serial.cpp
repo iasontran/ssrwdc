@@ -1,34 +1,36 @@
 #include "serial.h"
+#include <string.h>
 void initSerial(){
   USART_Init(MYUBRR);
 }
 void Serial_putString(const char str1[]){
   uint8_t i = 0;
   while (str1[i]) {
-    USART1_Transmit((str1[i]));
+    USART0_Transmit((str1[i]));
     i++;
   }
 }
 void Serial_getString(char str2[], uint8_t strLength){
   char newChar;
   uint8_t i;
-  i = 0;
-  while (i < (strLength - 1)) {
-    newChar = USART1_receive();
-    USART1_Transmit(newChar);
+  char len[3];
+  for (i = 0; i < strLength+1; i++) {
+    newChar = USART0_receive();
+    //USART0_Transmit(newChar);
     if (newChar == '\0' || newChar == '\r' ) {
-      USART1_Flush();
+      //USART0_Flush();
       //str2[i] = '\0';
-      i++;
+      itoa(i, len, 10);
+      sprintf(&str2[13], "%s", len);
       return;
     }
-    else {
+    else
       str2[i] = newChar;
-      i++;
-    }
   }
-  str2[i] = '\0';
-  USART1_Flush();
+  itoa(i, len, 10);
+  sprintf(&str2[i], "%s", len);
+  //str2[i] = i;
+  //USART0_Flush();
 }
 
 uint8_t convertToByte(void) {
@@ -42,14 +44,14 @@ uint8_t convertToByte(void) {
     hundreds = tens;
     tens = ones;
     ones = thisChar;
-    thisChar = USART1_receive();
-    USART1_Transmit(thisChar);
+    thisChar = USART0_receive();
+    USART0_Transmit(thisChar);
   } while (thisChar != '\r');
   return (100 * (hundreds - '0') + 10 * (tens - '0') + ones - '0');
 }
 
 void convertToAscii(uint8_t byte) {
-  USART1_Transmit('0' + (byte / 100));
-  USART1_Transmit('0' + ((byte / 10) % 10));
-  USART1_Transmit('0' + (byte % 10));
+  USART0_Transmit('0' + (byte / 100));
+  USART0_Transmit('0' + ((byte / 10) % 10));
+  USART0_Transmit('0' + (byte % 10));
 }

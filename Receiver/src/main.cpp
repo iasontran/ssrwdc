@@ -35,10 +35,10 @@ int main(){
   char str2[40] = "";
   char str3[40] = "";
   char newChar;
-
-  while(1){
+  // //
+  // //
+   while(1){
     assert_cs();
-    a++;
     send_spi(~i);
     send_spi(j);
     i = i << 1;
@@ -53,7 +53,18 @@ int main(){
     deassert_cs();
     assert_cs();
 
+    newChar = USART1_receive();
+    //USART1_Transmit(newChar);
+    str1[a] = newChar;
+    a = (a+1)%8;
+    if (a == 0){
+      initLCD();
+      writeString(str1);
+    }
+
+    /*
     Serial_getString(str2, 13);
+    //sprintf(str2, "%c", USART0_receive());
     initLCD();
     sprintf(str1, "The input is");
     writeString(str1);
@@ -62,15 +73,15 @@ int main(){
     //Serial.print(str2);
     //sprintf(str2, "%s", str3);
     writeString(str2);
-    sprintf(str2, "\0");
+    //sprintf(str2, "\0");
     //strcpy(str3, "");
     //sprintf(str2, "");
     // strcpy(str3, str1);
     // strcat(str3, str2);
     // strcat(str3, "\n");
     // Serial.write(str3);
-
-    USART0_Flush();
+*/
+    //USART0_Flush();
 
   }
 

@@ -8,10 +8,10 @@
 #include <SoftwareSerial.h>
 #define FOSC 16000000 //Clock Speed
 #ifndef BAUD
-#define BAUD 9600
+#define BAUD 115200
 #endif
 
-#define MYUBRR FOSC/16/BAUD-1
+#define MYUBRR 8
 
 #ifndef F_CPU
 #define F_CPU 16000000
