@@ -21,16 +21,27 @@ int state = 0; // set state 0
 //End Includes//
 
 
-static void test_encrypt_cbc(uint8_t key[32], uint8_t *output);
-static void test_decrypt_cbc(uint8_t key[32], uint8_t input[64]);
+uint8_t* test_encrypt_cbc(uint8_t *key);
+static void test_decrypt_cbc(uint8_t *key, uint8_t *input);
+static void phex(uint8_t* str);
 
 int main(void){
+  uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+  uint8_t in[]  = { 0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba, 0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
+                    0x9c, 0xfc, 0x4e, 0x96, 0x7e, 0xdb, 0x80, 0x8d, 0x67, 0x9f, 0x77, 0x7b, 0xc6, 0x70, 0x2c, 0x7d,
+                    0x39, 0xf2, 0x33, 0x69, 0xa9, 0xd9, 0xba, 0xcf, 0xa5, 0x30, 0xe2, 0x63, 0x04, 0x23, 0x14, 0x61,
+                    0xb2, 0xeb, 0x05, 0xe2, 0xc3, 0x9b, 0xe9, 0xfc, 0xda, 0x6c, 0x19, 0x07, 0x8c, 0x6a, 0x9d, 0x1b };
 
+  uint8_t ptx[]  = { 0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba, 0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
+                    0x9c, 0xfc, 0x4e, 0x96, 0x7e, 0xdb, 0x80, 0x8d, 0x67, 0x9f, 0x77, 0x7b, 0xc6, 0x70, 0x2c, 0x7d,
+                    0x39, 0xf2, 0x33, 0x69, 0xa9, 0xd9, 0xba, 0xcf, 0xa5, 0x30, 0xe2, 0x63, 0x04, 0x23, 0x14, 0x61,
+                    0xb2, 0xeb, 0x05, 0xe2, 0xc3, 0x9b, 0xe9, 0xfc, 0xda, 0x6c, 0x19, 0x07, 0x8c, 0x6a, 0x9d, 0x1b };
   init(); //necessary for atom ide using arduino libraries
   sei();
   uint8_t key[getKeySize()]; //key in uint8_t format
-  uint8_t* ctx;
-
+  uint8_t *text;
+  struct AES_ctx ctx1;
+  struct AES_ctx ctx2;
 
   /*char* fileName = "Write.txt"; //File name here, must be small
   char* fileValue = "Custom words";//whatever you want to write here
@@ -38,51 +49,87 @@ int main(void){
 write(fileName,fileValue);
 }*/
 
-while(1){
+  while(1){
 
-  /*begin State Machine
-    0 =  grab the keySize
-    1 = Key is grabbed do nothing unless program hasnt executed
-  */
+    /*begin State Machine
+      0 =  grab the keySize
+      1 = Key is grabbed do nothing unless program hasnt executed
+    */
 
-  switch(state){
-    case 0:
-
-    setKey(key);
-    if(!isProgramExecuted())
-    {
-
-      state = 0;
-      break;
-    } //end if
-      PORTG &= ~(1<<PORTG5);
-    state = 1;
-    break;
-/////////end case 0//////////////
-case 1:
-
-    if (!isProgramExecuted())
-    {
-
-      state = 0;  //If program hasnt executed properly go to state 0
-      break;
-    }//end if
-    else
-     {
-       PORTG |= (1<<PORTG5);
-      Serial.print("."); //Wait
-      test_encrypt_cbc(key, ctx);
-      test_decrypt_cbc(key, ctx);
-
-      delay(1000);
+    switch(state){
+      case 0:
+        setKey(key);
+        if(!isProgramExecuted()) {
+          state = 0;
+          break;
+        }
+        PORTG &= ~(1<<PORTG5);
+        state = 1;
         break;
-    }//end else
-///////////////end case 1///////////////
-}//End state machine
+      case 1:
+          if (!isProgramExecuted()) {
+            state = 0;  //If program hasnt executed properly go to state 0
+            break;
+          }//end if
+          else {
+             PORTG |= (1<<PORTG5);
+            //Serial.print("."); //Wait
 
+            Serial.println("Passed in key for encrypt: ");
+            for (int i = 0; i < 32; i++) {
+              Serial.print(key[i], HEX);
+            }
+            Serial.print("\n");
+            AES_init_ctx_iv(&ctx1, key, iv);
+            AES_CBC_encrypt_buffer(&ctx1, in, 64);
 
-  }//end while(1)
-return 0;
+            Serial.println("Produced ciphertext: ");
+            for (int i = 0; i < 64; i++) {
+              Serial.print(in[i], HEX);
+            }
+            Serial.println("");
+
+            Serial.println("Expected plaintext: ");
+            for (int i = 0; i < 64; i++) {
+              Serial.print(ptx[i], HEX);
+            }
+            Serial.println("");
+
+            Serial.println("Passed in key for decrypt: ");
+            for (int i = 0; i < 32; i++) {
+              Serial.print(key[i], HEX);
+            }
+            Serial.print("\n");
+
+            Serial.println("Decrypted plaintext: ");
+            AES_init_ctx_iv(&ctx2, key, iv);
+            AES_CBC_decrypt_buffer(&ctx2, in, 64);
+            for (int i = 0; i < 64; i++) {
+              Serial.print(in[i], HEX);
+            }
+            Serial.println("");
+
+            if (0 == memcmp((char*) ptx, (char*) in, 64)) {
+                Serial.println("SUCCESS!");
+            }
+            else {
+                Serial.println("FAILURE!");
+            }
+            /*
+            text = test_encrypt_cbc(key);
+            Serial.println("Ciphertext in main: ");
+            for (int i = 0; i < 64; i++) {
+              Serial.print(text[i], HEX);
+            }
+            Serial.print("\n");
+            test_decrypt_cbc(key, text);
+            */
+            delay(1000);
+            break;
+          }
+    }
+  }
+  return 0;
 }//End main
 
 
@@ -102,7 +149,7 @@ PORTG &= ~(1<<PORTG5);
 static void test_decrypt_cbc(uint8_t* key, uint8_t* input) {
 
   /* Array to store key for AES-256 */
-  uint8_t keys[] = { 0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+  uint8_t keyss[] = { 0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
                     0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };
   /* Array to store input ciphertext block for AES-256 */
   uint8_t in[]  = { 0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba, 0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
@@ -125,29 +172,29 @@ static void test_decrypt_cbc(uint8_t* key, uint8_t* input) {
 
     Serial.println("Passed in ciphertext: ");
     for (int i = 0; i < 64; i++) {
-      Serial.print(in[i]);
+      Serial.print(in[i], HEX);
     }
     Serial.println("");
 
     Serial.println("Expected plaintext: ");
     for (int i = 0; i < 64; i++) {
-      Serial.print(out[i]);
+      Serial.print(out[i], HEX);
     }
     Serial.println("");
 
     Serial.println("Passed in key for decrypt: ");
     for (int i = 0; i < 32; i++) {
-      Serial.print(key[i]);
+      Serial.print(key[i], HEX);
     }
-    Serial.println("");
+    Serial.print("\n");
 
     /* Ciphertext object */
     struct AES_ctx ctx;
-    Serial.println("CBC decrypt: ");
+    Serial.println("Decrypted plaintext: ");
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CBC_decrypt_buffer(&ctx, input, 64);
     for (int i = 0; i < 64; i++) {
-      Serial.print(in[i]);
+      Serial.print(in[i], HEX);
     }
     Serial.println("");
 
@@ -160,7 +207,7 @@ static void test_decrypt_cbc(uint8_t* key, uint8_t* input) {
 
 }
 
-static void test_encrypt_cbc(uint8_t* key, uint8_t *output) {
+uint8_t* test_encrypt_cbc(uint8_t* key) {
   /* Array to store key for AES-256 */
   uint8_t keys[] = { 0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
                     0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };
@@ -181,18 +228,18 @@ static void test_encrypt_cbc(uint8_t* key, uint8_t *output) {
   AES_init_ctx_iv(&ctx, key, iv);
   AES_CBC_encrypt_buffer(&ctx, in, 64);
 
-
+  // Serial.println("Hardcoded key: ");
+  // phex(keys);
 
   Serial.println("Passed in key for encrypt: ");
-  // cursorDown();
   for (int i = 0; i < 32; i++) {
-    Serial.print(key[i]);
+    Serial.print(key[i], HEX);
   }
   Serial.print("\n");
 
   Serial.println("Produced ciphertext: ");
   for (int i = 0; i < 64; i++) {
-    Serial.print(in[i]);
+    Serial.print(in[i], HEX);
   }
   Serial.print("\n");
   // if (0 == memcmp((char*) out, (char*) in, 64)) {
@@ -201,5 +248,13 @@ static void test_encrypt_cbc(uint8_t* key, uint8_t *output) {
   // else {
   //     Serial.println("FAILURE!");
   // }
-  output = in;
+  return in;
+}
+
+static void phex(uint8_t* str){
+  uint8_t len = 32;
+
+  for (unsigned char i = 0; i < len; ++i) {
+    Serial.println(str[i], HEX);
+  }
 }
