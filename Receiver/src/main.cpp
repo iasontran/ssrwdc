@@ -53,7 +53,7 @@ int main(){
     deassert_cs();
     assert_cs();
 
-    newChar = USART1_receive();
+    newChar = USART0_receive();
     //USART1_Transmit(newChar);
     str1[a] = newChar;
     a = (a+1)%8;
@@ -61,7 +61,7 @@ int main(){
       initLCD();
       writeString(str1);
     }
-
+    // writeCharacter(newChar);
     /*
     Serial_getString(str2, 13);
     //sprintf(str2, "%c", USART0_receive());
@@ -84,6 +84,5 @@ int main(){
     //USART0_Flush();
 
   }
-
    return 0;
 }
