@@ -18,7 +18,7 @@ int main() {
     // //char newChar ='B';
     //char inputString1[8] = "ABCDEFG\0";
     //char inputString2[13] = "print Bowen \0";
-    char str[8] = "Hello  ";
+    char str[8] = "Hello   ";
     int a = 0;
     int i = 0;
     while(1)
@@ -26,7 +26,7 @@ int main() {
       if(a == 0) {
 
         i = (i+1)%8;
-        str[7] = (char)(i+65);
+        str[6] = (char)(i+65);
       }
       //Serial_getString(str,13);
       //Serial_putString(str);

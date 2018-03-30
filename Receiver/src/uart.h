@@ -11,8 +11,8 @@
 #define BAUD 115200
 #endif
 
-#define MYUBRR 8
-
+#define MYUBRR 8 //define baud 115200
+//#define MYUBRR 7 //define baud 125000
 #ifndef F_CPU
 #define F_CPU 16000000
 #endif
