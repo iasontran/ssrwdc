@@ -30,8 +30,8 @@ ADCSRB &= ~(1 << ADTS2 | 1 << ADTS1 | 1 << ADTS0);
 // enable auto triggering and turn on ADC
 ADCSRA |= (1 << ADATE) | (1 << ADEN);
 
-// set the pre-scaler to 128 which should be ~9600 hz for sample freq
-ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+// set the pre-scaler to 128 which should be ~9600 hz for sample freq***************************not really
+ADCSRA |= ((1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0));
 
 //disable ADC pin 0 digital input
 DIDR0 |= (1 << ADC0D);
