@@ -55,11 +55,13 @@ while(1){
 
          PORTA = queue[k];
          PORTC &= ~(1 << PORTC7);
+
          //_delay_us(125); //// need to adjust delay depending on how much delay comes
            // // // from the other programs
          PORTC |= (1 << PORTC7);
+
       }
-      if(k == BUFFER_SIZE){
+      if(k == BUFFER_SIZE-1){
       i = 0;
       bufferFull = 0;
       k = 0;
