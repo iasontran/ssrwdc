@@ -27,7 +27,7 @@ volatile int bufferFull = 0;
 
 int main(void){
   sei();
-  Serial.begin(9600);
+  //Serial.begin(9600);
   setUpADC();
 // initSerial();
 //  setUpDAC();
@@ -41,9 +41,9 @@ while(1){
 
   if (bufferFull == 1){
       // Transmit buffer
-      Serial.println("Contents");
+    //  Serial.println("Contents");
       for(k =0;k<BUFFER_SIZE;k++){
-        Serial.println(queue[k], BIN); // change to usart transmit
+        transmit_part(queue[k]); // change to usart transmit
       }
       i = 0;
       bufferFull = 0;
