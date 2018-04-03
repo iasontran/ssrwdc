@@ -1,9 +1,9 @@
 #include "usart.h"
 
 void initSerial(){
-  UBRR1L = 8; // Baud rate 9600
-  UCSR1B |= (1 << RXEN1 | 1 << TXEN1 | 1 << RXCIE1);// | 1 << RXCIE0); // Enable receiver and transmitter
-  UCSR1C = (1 << USBS1) | (3 << UCSZ10); // Set frame format: 8 data, 2 stop bits
+  UBRR0L = 8; // Baud rate 9600
+  UCSR0B |= (1 << RXEN0 | 1 << TXEN0 | 1 << RXCIE0);// | 1 << RXCIE0); // Enable receiver and transmitter
+  UCSR0C = (1 << USBS0) | (3 << UCSZ00); // Set frame format: 8 data, 2 stop bits
 }
 
 void transmit_data(uint8_t data[]){
@@ -17,21 +17,16 @@ void transmit_data(uint8_t data[]){
 }
 
 void transmit_part(uint8_t data) {
-  while(!(UCSR1A & (1 << UDRE1))); // Wait for empty transmit buffer
+  while(!(UCSR0A & (1 << UDRE0))); // Wait for empty transmit buffer
 
 
-  UDR1 = data; // Put data into buffer, sends the data
+  UDR0 = data; // Put data into buffer, sends the data
 }
 
 uint8_t receive_data(){
 
-  while(!(UCSR1A & (1 << UDRE1))); // Wait for data to be received
+  while(!(UCSR0A & (1 << UDRE0))); // Wait for data to be received
 
-return UDR1; // Get and return received data from buffer
+return UDR0; // Get and return received data from buffer
 
 }
-
-//void flush_data(){
-  //unsigned char dummy;
-  //while(UCSR0A & (1 << RXC0)) dummy = UDR0;
-//}
