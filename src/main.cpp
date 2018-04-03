@@ -29,7 +29,7 @@ int main(void){
   sei();
   //Serial.begin(9600);
   setUpADC();
-// initSerial();
+initSerial();
 //  setUpDAC();
   initTimer1();
   int k =0;
@@ -39,17 +39,19 @@ while(1){
   // Serial.println(i);
 //
 //
-//   if (bufferFull == 1){
-//       // Transmit buffer
-//     //  Serial.println("Contents");
-//       for(k =0;k<BUFFER_SIZE;k++){
-//         transmit_part(queue[k]); // change to usart transmit
-//       }
-//       i = 0;
-//       bufferFull = 0;
+  if (bufferFull == 1){
+      // Transmit buffer
+    //  Serial.println("Contents");
+      for(k =0;k<BUFFER_SIZE;k++){
+        transmit_part(queue[k]); // change to usart transmit
+      }
+      i = 0;
+      bufferFull = 0;
+
+  }
 //
-//   }
-//
+// adcValue = ADCH;
+// transmit_part(adcValue);
 //   //transmit_part(adcValue);
 // //Serial.println(adcValue);
 //   // PORTA = adcValue;
@@ -62,20 +64,19 @@ while(1){
 
 // Timer one interrupt should be at 8khz per g.711 audio
 // This timer should signal time to sample audio as well as when to
-// apply to DAC when ran on receiving device
+// // apply to DAC when ran on receiving device
 ISR(TIMER1_COMPA_vect){
-// if(bufferFull == 0){
-// if(i < BUFFER_SIZE){
-//   queue[i] = ADCH;
-//   i++;
-//
-// }
-// if(i == (BUFFER_SIZE)){
-//   bufferFull = 1;
-// }
-// }
-adcValue = ADCH;
-transmit_part(adcValue);
+if(bufferFull == 0){
+if(i < BUFFER_SIZE){
+  queue[i] = ADCH;
+  i++;
+
+}
+if(i == (BUFFER_SIZE)){
+  bufferFull = 1;
+}
+}
+
 }
 // ISR(USART0_RX_vect){
 //

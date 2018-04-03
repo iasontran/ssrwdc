@@ -30,3 +30,8 @@ uint8_t receive_data(){
 return UDR0; // Get and return received data from buffer
 
 }
+
+//void flush_data(){
+  //unsigned char dummy;
+  //while(UCSR0A & (1 << RXC0)) dummy = UDR0;
+//}
