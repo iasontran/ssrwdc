@@ -11,12 +11,12 @@
 /* Initialize timer 0, you should not turn the timer on here. You will need to
 * use CTC mode
 */
-void initTimer0(){
-  // set timer 0 to ctc mode with 8 prescaler
-  // for a microsecond timer
-  TCCR0B |= (1 << WGM02) | (1 << CS01);
-  OCR0A = 2;
-}
+// void initTimer0(){
+//   // set timer 0 to ctc mode with 8 prescaler
+//   // for a microsecond timer
+//   TCCR0B |= (1 << WGM02) | (1 << CS01);
+//   OCR0A = 2;
+// }
 
 void initTimer1(){
 // set timer 1 to ctc mode with 64 prescaler and enable interupt for
@@ -27,16 +27,16 @@ void initTimer1(){
 
 }
 
-/* This delays the program an amount specified by unsigned int delay.
-*/
-void delayUs(unsigned int del){
-unsigned int x = 0;
-TIFR0 |= (1 << OCF0A);
-TCNT0 = 0x00;
-while (x < del){
-if (TIFR0 & (1 << OCF0A)){
-  x++;
-  TIFR0 |= (1 << OCF0A);
-   }
- }
-}
+// /* This delays the program an amount specified by unsigned int delay.
+// */
+// void delayUs(unsigned int del){
+// unsigned int x = 0;
+// TIFR0 |= (1 << OCF0A);
+// TCNT0 = 0x00;
+// while (x < del){
+// if (TIFR0 & (1 << OCF0A)){
+//   x++;
+//   TIFR0 |= (1 << OCF0A);
+//    }
+//  }
+// }
