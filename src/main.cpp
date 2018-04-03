@@ -51,23 +51,24 @@ while(1){
   // }
 
   //transmit_part(adcValue);
-  // if (bufferFull == 1){
+   if (bufferFull == 1){
   //
-         PORTA = adcValue;
+         PORTA = queue[k];
 
          PORTC &= ~(1 << PORTC7);
 
          //_delay_us(125); //// need to adjust delay depending on how much delay comes
            // // // from the other programs
          PORTC |= (1 << PORTC7);
+         
   //
-  //     }
-  //     if(k == BUFFER_SIZE-1){
-  //     i = 0;
-  //     bufferFull = 0;
-  //     k = 0;
-  // }
-  //}
+    }
+      if(k == BUFFER_SIZE-1){
+      i = 0;
+      bufferFull = 0;
+      k = 0;
+  }
+  }
 //Serial.println(adcValue);
   // PORTA = adcValue;
   //  PORTC &= ~(1 << PORTC7);
@@ -75,25 +76,25 @@ while(1){
   //   // // // from the other programs
   //  PORTC |= (1 << PORTC7);
 
-}
 
+}
 // Timer one interrupt should be at 8khz per g.711 audio
 // This timer should signal time to sample audio as well as when to
 // apply to DAC when ran on receiving device
-// ISR(TIMER1_COMPA_vect){
-// if(bufferFull == 1){
-//   k++;
-
+ISR(TIMER1_COMPA_vect){
+if(bufferFull == 1){
+  k++;
+}
 }
 ISR(USART0_RX_vect){
-adcValue = receive_data();
-  // if(bufferFull == 0){
-  // if(i < BUFFER_SIZE){
-  //   queue[i] = receive_data();
-  //   i++;
-  // }
-  // if(i == (BUFFER_SIZE)){
-  //   bufferFull = 1;
-  // }
-  // }
+
+  if(bufferFull == 0){
+  if(i < BUFFER_SIZE){
+    queue[i] = receive_data();
+    i++;
+  }
+  if(i == (BUFFER_SIZE)){
+    bufferFull = 1;
+  }
+  }
   }
