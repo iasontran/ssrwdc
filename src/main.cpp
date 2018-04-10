@@ -124,27 +124,23 @@ circular_buf_t rxCbuf;
 while(1){
   if (state == MESSAGE_AVAILABLE){
     adcValue = receive_data();
-    if(!circular_buf_full(rxCbuf)){
-   circular_buf_put(&rxCbuf, adcValue);
- }
+    circular_buf_put(&rxCbuf, adcValue);
     state = WAIT;
   }
   else if (state == TIMER_INT){
 
-    i = circular_buf_get(&rxCbuf,  &adcValue2);
-    if(i == -1){
-      circular_buf_reset(&rxCbuf);
-    }
-    else{
+    circular_buf_get(&rxCbuf,  &adcValue2);
+    if (adcValue2 != NULL){
     PORTA = adcValue2;
-     PORTC &= ~(1 << PORTC7);
+    PORTC &= ~(1 << PORTC7);
     //_delay_us(125); //// need to adjust delay depending on how much delay comes
-      // // // from the other programs
-     PORTC |= (1 << PORTC7);
+     // // // from the other programs
+    PORTC |= (1 << PORTC7);
    }
      state = WAIT;
 
   }
+  state = WAIT;
 
 
 }
