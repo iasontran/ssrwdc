@@ -24,7 +24,7 @@
 #include <stdbool.h>
 
 
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 300
 #define WAIT 0
 #define MESSAGE_AVAILABLE 1
 #define TIMER_INT 2
@@ -46,15 +46,26 @@ typedef struct {
   size_t size;
 } circular_buf_t;
 
-int circular_buf_reset(circular_buf_t * cbuf);
-int circular_buf_put(circular_buf_t * cbuf, uint8_t data);
-int circular_buf_get(circular_buf_t * cbuf, uint8_t * data);
-bool circular_buf_empty(circular_buf_t cbuf);
-bool circular_buf_full(circular_buf_t cbuf);
+// int circular_buf_reset(circular_buf_t * cbuf);
+// int circular_buf_put(circular_buf_t * cbuf, uint8_t data);
+// int circular_buf_get(circular_buf_t * cbuf, uint8_t * data);
+// bool circular_buf_empty(circular_buf_t cbuf);
+// bool circular_buf_full(circular_buf_t cbuf);
 // static char *itohexa_helper(char *dest, unsigned x);
 // char *itohexa(char *dest, unsigned x);
 
 // Circular buffer functions
+bool circular_buf_empty(circular_buf_t cbuf) {
+// We define empty as head == tail
+  return (cbuf.head == cbuf.tail);
+}
+
+bool circular_buf_full(circular_buf_t cbuf) {
+// We determine "full" case by head being one position behind the tail
+// Note that this means we are wasting one space in the buffer!
+// Instead, you could have an "empty" flag and determine buffer full that way
+  return ((cbuf.head + 1) % cbuf.size) == cbuf.tail;
+}
 
 int circular_buf_reset(circular_buf_t * cbuf) {
   int r = -1;
@@ -94,17 +105,6 @@ int circular_buf_get(circular_buf_t * cbuf, uint8_t * data) {
   return r;
 }
 
-bool circular_buf_empty(circular_buf_t cbuf) {
-// We define empty as head == tail
-  return (cbuf.head == cbuf.tail);
-}
-
-bool circular_buf_full(circular_buf_t cbuf) {
-// We determine "full" case by head being one position behind the tail
-// Note that this means we are wasting one space in the buffer!
-// Instead, you could have an "empty" flag and determine buffer full that way
-  return ((cbuf.head + 1) % cbuf.size) == cbuf.tail;
-}
 
 
 int main(void){
@@ -118,22 +118,30 @@ int main(void){
   initTimer1();
 //  Serial.println("Buffer Contents");
 circular_buf_t rxCbuf;
- rxCbuf.size = 32;
+ rxCbuf.size = BUFFER_SIZE;
  circular_buf_reset(&rxCbuf); // set head/tail to 0
  rxCbuf.buffer = malloc(rxCbuf.size);
 while(1){
   if (state == MESSAGE_AVAILABLE){
     adcValue = receive_data();
-    circular_buf_put(&rxCbuf, adcValue);
+    if(!circular_buf_full(rxCbuf)){
+   circular_buf_put(&rxCbuf, adcValue);
+ }
     state = WAIT;
   }
   else if (state == TIMER_INT){
-    circular_buf_get(&rxCbuf,  &adcValue2);
+
+    i = circular_buf_get(&rxCbuf,  &adcValue2);
+    if(i == -1){
+      circular_buf_reset(&rxCbuf);
+    }
+    else{
     PORTA = adcValue2;
      PORTC &= ~(1 << PORTC7);
     //_delay_us(125); //// need to adjust delay depending on how much delay comes
       // // // from the other programs
      PORTC |= (1 << PORTC7);
+   }
      state = WAIT;
 
   }
