@@ -24,19 +24,14 @@
 #include <stdbool.h>
 
 
-#define BUFFER_SIZE 300
+#define BUFFER_SIZE 4096
 #define WAIT 0
 #define MESSAGE_AVAILABLE 1
 #define TIMER_INT 2
 
-volatile uint8_t adcValue = 0;
-volatile uint8_t adcValue2 = 0;
+ uint8_t adcValue = 0;
+ uint8_t adcValue2 = 0;
 volatile int state = WAIT;
-
-uint8_t queue[BUFFER_SIZE];
-volatile int i = 0;
-volatile int k = 0;
-volatile int bufferFull = 0;
 
 // Circular buffer struct
 typedef struct {
@@ -46,11 +41,11 @@ typedef struct {
   size_t size;
 } circular_buf_t;
 
-// int circular_buf_reset(circular_buf_t * cbuf);
-// int circular_buf_put(circular_buf_t * cbuf, uint8_t data);
-// int circular_buf_get(circular_buf_t * cbuf, uint8_t * data);
-// bool circular_buf_empty(circular_buf_t cbuf);
-// bool circular_buf_full(circular_buf_t cbuf);
+int circular_buf_reset(circular_buf_t * cbuf);
+int circular_buf_put(circular_buf_t * cbuf, uint8_t data);
+int circular_buf_get(circular_buf_t * cbuf, uint8_t * data);
+bool circular_buf_empty(circular_buf_t cbuf);
+bool circular_buf_full(circular_buf_t cbuf);
 // static char *itohexa_helper(char *dest, unsigned x);
 // char *itohexa(char *dest, unsigned x);
 
@@ -122,7 +117,9 @@ circular_buf_t rxCbuf;
 while(1){
   if (state == MESSAGE_AVAILABLE){
     adcValue = receive_data();
+    if(!(circular_buf_full(rxCbuf))){
     circular_buf_put(&rxCbuf, adcValue);
+  }
     state = WAIT;
   }
   else if (state == TIMER_INT){
