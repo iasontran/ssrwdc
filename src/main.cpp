@@ -16,15 +16,96 @@
 #include "usart.h"
 #include "timer.h"
 
+// Libraries used for circular buffer
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+
 #define BUFFER_SIZE 32
-#define FALSE 0
-#define TRUE 1
+#define WAIT 0
+#define MESSAGE_AVAILABLE 1
+#define TIMER_INT 2
 
 volatile uint8_t adcValue = 0;
+volatile uint8_t adcValue2 = 0;
+volatile int state = WAIT;
+
 uint8_t queue[BUFFER_SIZE];
 volatile int i = 0;
 volatile int k = 0;
 volatile int bufferFull = 0;
+
+// Circular buffer struct
+typedef struct {
+  uint8_t *buffer;
+  size_t head;
+  size_t tail;
+  size_t size;
+} circular_buf_t;
+
+int circular_buf_reset(circular_buf_t * cbuf);
+int circular_buf_put(circular_buf_t * cbuf, uint8_t data);
+int circular_buf_get(circular_buf_t * cbuf, uint8_t * data);
+bool circular_buf_empty(circular_buf_t cbuf);
+bool circular_buf_full(circular_buf_t cbuf);
+// static char *itohexa_helper(char *dest, unsigned x);
+// char *itohexa(char *dest, unsigned x);
+
+// Circular buffer functions
+
+int circular_buf_reset(circular_buf_t * cbuf) {
+  int r = -1;
+  if(cbuf) {
+    cbuf->head = 0;
+    cbuf->tail = 0;
+    r = 0;
+  }
+  return r;
+}
+
+int circular_buf_put(circular_buf_t * cbuf, uint8_t data) {
+  int r = -1;
+  if(cbuf) {
+    cbuf->buffer[cbuf->head] = data;
+    cbuf->head = (cbuf->head + 1) % cbuf->size;
+
+    if(cbuf->head == cbuf->tail) {
+      cbuf->tail = (cbuf->tail + 1) % cbuf->size;
+    }
+
+    r = 0;
+  }
+  return r;
+}
+
+int circular_buf_get(circular_buf_t * cbuf, uint8_t * data) {
+  int r = -1;
+
+  if(cbuf && data && !circular_buf_empty(*cbuf)) {
+    *data = cbuf->buffer[cbuf->tail];
+    cbuf->tail = (cbuf->tail + 1) % cbuf->size;
+
+    r = 0;
+  }
+
+  return r;
+}
+
+bool circular_buf_empty(circular_buf_t cbuf) {
+// We define empty as head == tail
+  return (cbuf.head == cbuf.tail);
+}
+
+bool circular_buf_full(circular_buf_t cbuf) {
+// We determine "full" case by head being one position behind the tail
+// Note that this means we are wasting one space in the buffer!
+// Instead, you could have an "empty" flag and determine buffer full that way
+  return ((cbuf.head + 1) % cbuf.size) == cbuf.tail;
+}
+
 
 int main(void){
   sei();
@@ -32,70 +113,40 @@ int main(void){
   //setUpADC();
   initSerial();
   setUpDAC();
-  //initTimer1();
+
+
+  initTimer1();
 //  Serial.println("Buffer Contents");
+circular_buf_t rxCbuf;
+ rxCbuf.size = 32;
+ circular_buf_reset(&rxCbuf); // set head/tail to 0
+ rxCbuf.buffer = malloc(rxCbuf.size);
 while(1){
-   //Serial.println(bufferFull);
-  // Serial.println(i);
+  if (state == MESSAGE_AVAILABLE){
+    adcValue = receive_data();
+    circular_buf_put(&rxCbuf, &adcValue);
+    state = WAIT;
+  }
+  else if (state == TIMER_INT){
+    if(circular_buf_get(&rxCbuf,  &adcValue2)){
+    PORTA = adcValue2;
+     PORTC &= ~(1 << PORTC7);
+    //_delay_us(125); //// need to adjust delay depending on how much delay comes
+      // // // from the other programs
+     PORTC |= (1 << PORTC7);
+     state = WAIT;
+   }
+  }
 
-
-  // if (bufferFull == 1){
-  //     // Transmit buffer
-  //     //Serial.println("Contents");
-  //     for(k =0;k<BUFFER_SIZE;k++){
-  //       transmit_part(queue[k]); // change to usart transmit
-  //     }
-  //     i = 0;
-  //     bufferFull = 0;
-  //
-  // }
-
-  //transmit_part(adcValue);
-  //  if (bufferFull == 1){
-  // //
-  //        PORTA = queue[k];
-  //
-  //        PORTC &= ~(1 << PORTC7);
-  //
-  //        //_delay_us(125); //// need to adjust delay depending on how much delay comes
-  //          // // // from the other programs
-  //        PORTC |= (1 << PORTC7);
-  //
-  // //
-  //   }
-  //     if(k == BUFFER_SIZE-1){
-  //     i = 0;
-  //     bufferFull = 0;
-  //     k = 0;
-  // }
-// adcValue = ADCH;
-// transmit_part(adcValue);
-  PORTA = adcValue;
-   PORTC &= ~(1 << PORTC7);
-  //_delay_us(125); //// need to adjust delay depending on how much delay comes
-    // // // from the other programs
-   PORTC |= (1 << PORTC7);
 
 }
 }
 // Timer one interrupt should be at 8khz per g.711 audio
 // This timer should signal time to sample audio as well as when to
 // apply to DAC when ran on receiving device
-// ISR(TIMER1_COMPA_vect){
-// if(bufferFull == 1){
-//   k++;
-// }
-// }
+ISR(TIMER1_COMPA_vect){
+state = TIMER_INT;
+}
 ISR(USART0_RX_vect){
-
-  // if(bufferFull == 0){
-  // if(i < BUFFER_SIZE){
-  //   queue[i] = receive_data();
-  //   i++;
-  // }
-  // if(i == (BUFFER_SIZE)){
-  //   bufferFull = 1;
-  // }
-  // }
-  adcValue = receive_data();
+  state = MESSAGE_AVAILABLE;
   }
