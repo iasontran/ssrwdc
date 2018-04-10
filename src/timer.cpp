@@ -21,8 +21,10 @@
 void initTimer1(){
 // set timer 1 to ctc mode with 64 prescaler and enable interupt for
 // output compare reg A, for interrupt every .000124s or almost 8khz
+
+// OCRnA Equation: f(clock)/(prescaler * OCRnA) = f(timer interrupt)
   TCCR1B |= (1 << CS11) | (1 << CS10) | (1 << WGM12);
-  OCR1A = 31;
+  OCR1A = 31; //8k
   TIMSK1 |= (1 << OCIE1A);
 
 }
