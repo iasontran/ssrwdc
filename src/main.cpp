@@ -43,7 +43,9 @@ while(1){
 // This timer should signal time to sample audio as well as when to
 // apply to DAC when ran on receiving device
 ISR(TIMER1_COMPA_vect){
+
   transmit_part(adcValue);
+
 }
 // ISR(USART0_RX_vect){
 //
