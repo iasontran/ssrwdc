@@ -113,8 +113,6 @@ int main(void){
   //setUpADC();
   initSerial();
   setUpDAC();
-
-
   initTimer1();
 //  Serial.println("Buffer Contents");
 circular_buf_t rxCbuf;
@@ -140,8 +138,6 @@ while(1){
      state = WAIT;
 
   }
-  state = WAIT;
-
 
 }
 }
