@@ -32,7 +32,7 @@ int main(void){
   //setUpADC();
   initSerial();
   setUpDAC();
-  initTimer1();
+  //initTimer1();
 //  Serial.println("Buffer Contents");
 while(1){
    //Serial.println(bufferFull);
@@ -51,50 +51,51 @@ while(1){
   // }
 
   //transmit_part(adcValue);
-   if (bufferFull == 1){
+  //  if (bufferFull == 1){
+  // //
+  //        PORTA = queue[k];
   //
-         PORTA = queue[k];
-
-         PORTC &= ~(1 << PORTC7);
-
-         //_delay_us(125); //// need to adjust delay depending on how much delay comes
-           // // // from the other programs
-         PORTC |= (1 << PORTC7);
-         
+  //        PORTC &= ~(1 << PORTC7);
   //
-    }
-      if(k == BUFFER_SIZE-1){
-      i = 0;
-      bufferFull = 0;
-      k = 0;
-  }
-  }
-//Serial.println(adcValue);
-  // PORTA = adcValue;
-  //  PORTC &= ~(1 << PORTC7);
-  // //_delay_us(125); //// need to adjust delay depending on how much delay comes
-  //   // // // from the other programs
-  //  PORTC |= (1 << PORTC7);
+  //        //_delay_us(125); //// need to adjust delay depending on how much delay comes
+  //          // // // from the other programs
+  //        PORTC |= (1 << PORTC7);
+  //
+  // //
+  //   }
+  //     if(k == BUFFER_SIZE-1){
+  //     i = 0;
+  //     bufferFull = 0;
+  //     k = 0;
+  // }
+// adcValue = ADCH;
+// transmit_part(adcValue);
+  PORTA = adcValue;
+   PORTC &= ~(1 << PORTC7);
+  //_delay_us(125); //// need to adjust delay depending on how much delay comes
+    // // // from the other programs
+   PORTC |= (1 << PORTC7);
 
-
+}
 }
 // Timer one interrupt should be at 8khz per g.711 audio
 // This timer should signal time to sample audio as well as when to
 // apply to DAC when ran on receiving device
-ISR(TIMER1_COMPA_vect){
-if(bufferFull == 1){
-  k++;
-}
-}
+// ISR(TIMER1_COMPA_vect){
+// if(bufferFull == 1){
+//   k++;
+// }
+// }
 ISR(USART0_RX_vect){
 
-  if(bufferFull == 0){
-  if(i < BUFFER_SIZE){
-    queue[i] = receive_data();
-    i++;
-  }
-  if(i == (BUFFER_SIZE)){
-    bufferFull = 1;
-  }
-  }
+  // if(bufferFull == 0){
+  // if(i < BUFFER_SIZE){
+  //   queue[i] = receive_data();
+  //   i++;
+  // }
+  // if(i == (BUFFER_SIZE)){
+  //   bufferFull = 1;
+  // }
+  // }
+  adcValue = receive_data();
   }
