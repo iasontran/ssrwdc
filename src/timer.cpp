@@ -24,7 +24,7 @@ void initTimer1(){
 
 // OCRnA Equation: f(clock)/(prescaler * OCRnA) = f(timer interrupt)
   TCCR1B |= (1 << CS11) | (1 << CS10) | (1 << WGM12);
-  OCR1A = 31; //4k
+  OCR1A = 84; //4k
   TIMSK1 |= (1 << OCIE1A);
 
 }
