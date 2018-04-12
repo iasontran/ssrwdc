@@ -15,11 +15,10 @@
 #include <avr/io.h>
 #include "usart.h"
 // TX TIMER
-// #include "timer.h"
+#include "timer.h"
 
-// RX TIMER
-#include "timer_lcd.h"
-#include "lcd.h"
+// RX
+#include <util/delay.h>
 
 // Libraries used for circular buffer
 #include <stdio.h>
@@ -107,14 +106,64 @@ bool circular_buf_full(circular_buf_t cbuf) {
   return ((cbuf.head + 1) % cbuf.size) == cbuf.tail;
 }
 
+struct Buffer {
+    uint8_t data[BUFFER_SIZE];
+    uint8_t newest_index;
+    uint8_t oldest_index;
+};
+enum BufferStatus {BUFFER_OK, BUFFER_EMPTY, BUFFER_FULL};
+volatile struct Buffer tx_buffer = {{}, 0, 0};
+
+enum BufferStatus bufferWrite(volatile struct Buffer *tx_buffer, uint8_t byte){
+    uint8_t next_index = (((tx_buffer->newest_index)+1) % BUFFER_SIZE);
+
+    if (next_index == tx_buffer->oldest_index){
+        return BUFFER_FULL;
+    }
+
+    tx_buffer->data[tx_buffer->newest_index] = byte;
+    tx_buffer->newest_index = next_index;
+        return BUFFER_OK;
+}
+
+enum BufferStatus bufferRead(volatile struct Buffer *tx_buffer, uint8_t *byte){
+
+    if (tx_buffer->newest_index == tx_buffer->oldest_index){
+        return BUFFER_EMPTY;
+    }
+
+    *byte = tx_buffer->data[tx_buffer->oldest_index];
+    tx_buffer->oldest_index = ((tx_buffer->oldest_index+1) % BUFFER_SIZE);
+        return BUFFER_OK;
+}
+
+void dumpBuffer(void){
+
+	for (uint8_t i=0; i<BUFFER_SIZE; i++){
+		if (tx_buffer.oldest_index == tx_buffer.newest_index && tx_buffer.newest_index == i){
+			transmit_part('=');
+		} else  if (tx_buffer.oldest_index == i){
+			transmit_part('[');
+		} else if (tx_buffer.newest_index == i){
+			transmit_part(']');
+		} else {
+			transmit_part('.');
+		}
+	}
+
+	for (uint8_t i=0; i<BUFFER_SIZE; i++){
+			transmit_part(tx_buffer.data[i]);
+	}
+}
+
 int main(void){
   sei();
-  //setUpADC();
-  initTimer0();
-  initLCD();
+  initTimer1();
   initSerial();
-  initTimer1_LCD();
-  // Serial.begin(9600);
+  Serial.begin(9600);
+  setUpADC();
+  uint8_t received_byte;
+  enum BufferStatus status;
   //  setUpDAC();
   //  Serial.println("Buffer Contents");
 
@@ -123,12 +172,13 @@ int main(void){
   // circular_buf_reset(&txCbuf); // set head/tail to 0
   // txCbuf.buffer = malloc(txCbuf.size);
 
-  circular_buf_t rxCbuf;
-  rxCbuf.size = 84;
-  circular_buf_reset(&rxCbuf); // set head/tail to 0
-  rxCbuf.buffer = malloc(rxCbuf.size);
-  displayOn();
-  char display[8];
+  // DDRB |= (1 << DDB7);
+  // circular_buf_t rxCbuf;
+  // rxCbuf.size = 84;
+  // circular_buf_reset(&rxCbuf); // set head/tail to 0
+  // rxCbuf.buffer = malloc(rxCbuf.size);
+  // displayOn();
+  // char display[8];
 
   while(1){
   // Serial.println(bufferFull);
@@ -139,13 +189,15 @@ int main(void){
   // for (unsigned int k = 0; k < txCbuf.size; k++) {
   //   circular_buf_put(&txCbuf, queue[k]);
   // }
-
-  // Retrieve data from buffer to transmit
+  //
+  // // Retrieve data from buffer to transmit
   // while(!circular_buf_empty(txCbuf)) {
   //   uint8_t data;
   //   circular_buf_get(&txCbuf, &data);
   //   Serial.print("Transmitting value from ADC: ");
   //   Serial.println(data, HEX);
+  //   String test = String(data, HEX);
+  //   Serial.println(test);
   //   transmit_part(data);
   // }
   // i = 0; // Reset ADC interrupt buffer count
@@ -153,22 +205,21 @@ int main(void){
 
   // RX CODE BEGIN
   // If a USART value is received, begin putting value into buffer
-  if (receivedVal) {
-    circular_buf_put(&rxCbuf, adcValue);
-    receivedVal = false;
-  }
-  // if (!(circular_buf_empty(rxCbuf))) {
-  //     circular_buf_put(&rxCbuf, adcValue);
+  // if (receivedVal) {
+  //   circular_buf_put(&rxCbuf, adcValue);
+  //   receivedVal = false;
   // }
-  // If a buffer is full, proceed with grabbing buffer values
-  if (circular_buf_full(rxCbuf)) {
-    for (unsigned int k = 0; k < rxCbuf.size; k++) {
-      circular_buf_get(&rxCbuf, &queue[k]);
-      if (0 == memcmp((char*) queue[k], (char*)"3", 1)) {
-        // Light LED
-      }
-    }
-  }
+  // // If a buffer is full, proceed with grabbing buffer values
+  // if (circular_buf_full(rxCbuf)) {
+  //   for (unsigned int k = 0; k < rxCbuf.size; k++) {
+  //     circular_buf_get(&rxCbuf, &queue[k]);
+  //     if (queue[k] == 255) {
+  //       // PORTB |= (1 << PORTB7);
+  //       // _delay_ms(250.0);
+  //       // PORTB ^= (1 << PORTB7);
+  //     }
+  //   }
+  // }
   // RX CODE END
 
   /*
@@ -212,11 +263,12 @@ char *itohexa(char *dest, unsigned x) {
 // Timer one interrupt should be at 8khz per g.711 audio
 // This timer should signal time to sample audio as well as when to
 // // apply to DAC when ran on receiving device
-ISR(TIMER1_COMPA_vect) {
+ ISR(TIMER1_COMPA_vect) {
 
   if(i < BUFFER_SIZE) {
     queue[i] = ADCH;
     i++;
+    transmit_part(ADCH);
   }
 
 
@@ -233,7 +285,7 @@ ISR(TIMER1_COMPA_vect) {
   */
 }
 
-ISR(USART0_RX_vect){
-  adcValue = receive_data();
-  receivedVal = true;
-}
+// ISR(USART0_tx_vect){
+//   adcValue = receive_data();
+//   receivedVal = true;
+// }
