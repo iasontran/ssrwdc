@@ -1,8 +1,8 @@
-
-#include "serial.h"
+#include "usart.h"
 
 void initSerial(){
-  UBRR0L = 103; // Baud rate 9600
+  // UBRRnL equation: UBRRnL = (f(clock))/(16*BAUD) - 1
+  UBRR0L = 8; // Baud rate 115200
   UCSR0B |= (1 << RXEN0 | 1 << TXEN0 | 1 << RXCIE0);// | 1 << RXCIE0); // Enable receiver and transmitter
   UCSR0C = (1 << USBS0) | (3 << UCSZ00); // Set frame format: 8 data, 2 stop bits
 }
@@ -25,8 +25,11 @@ void transmit_part(uint8_t data) {
 }
 
 uint8_t receive_data(){
-  //while(!(UCSR0A & (1 << RXC0))); // Wait for data to be received
-  return UDR0; // Get and return received data from buffer
+
+  while(!(UCSR0A & (1 << UDRE0))); // Wait for data to be received
+
+return UDR0; // Get and return received data from buffer
+
 }
 
 //void flush_data(){

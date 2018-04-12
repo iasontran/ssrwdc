@@ -1,5 +1,5 @@
-#ifndef SERIAL_H
-#define SERIAL_H
+#ifndef USART_H
+#define USART_H
 
 #include <Arduino.h>
 #include <avr/io.h>
