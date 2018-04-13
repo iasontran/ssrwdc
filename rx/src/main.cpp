@@ -152,11 +152,42 @@ int main() {
   uint8_t decrypted[64];
 
   while(1) {
+    // If circular buffer is full, grab entire buffer and store in
+    // array for decryption and pass to decryption process
+    if (circular_buf_full(rxCbuf)) {
+      for (j = 0; j < BUFFER_SIZE; j++) {
+        circular_buf_get(&rxCbuf,  &adcVal[j]);
+      }
+      AES_CBC_decrypt_buffer(&ctx2, adcVal, 64);
+      memcpy(decrypted, adcVal, sizeof(adcVal));
+    }
+    switch(state2){
+      case MESSAGE_AVAILABLE:
+        adcValue = receive_data();
+        if(!(circular_buf_full(rxCbuf))){
+          circular_buf_put(&rxCbuf, adcValue);
+        }
+        state = WAIT;
+      break;
+      case TIMER_INT:
+        PORTA = decrypted[k];
+        PORTC &= ~(1 << PORTC7);
+        PORTC |= (1 << PORTC7);
+        if (k == BUFFER_SIZE - 1) {
+          k = 0;
+        } else {
+          k++;
+        }
+        state2 = WAIT;
+      break;
+    }
+
     /*
      * State Machine:
      * 0 = Grab key size
      * 1 = Key is grabbed, do nothing unless program hasn't executed
      */
+    /*
     switch(state){
       case 0:
         setKey(key);
@@ -205,6 +236,7 @@ int main() {
         }
         break;
     }
+    */
   }
 
   return 0;
@@ -224,7 +256,7 @@ static void phex(uint8_t* str){
  * Interrupt for receiving data via USART
  */
 ISR(USART0_RX_vect) {
-  state = MESSAGE_AVAILABLE;
+  state2 = MESSAGE_AVAILABLE;
 }
 
 ISR(TIMER1_COMPA_vect){

@@ -19,6 +19,10 @@
 #include "adc.h"
 #include <util/delay.h>
 #include "usart.h"
+#define WAIT 0
+#define MESSAGE_AVAILABLE 1
+#define TIMER_INT 2
+#define BUFFER_SIZE 64
 
 uint8_t* test_encrypt_cbc(uint8_t *key);
 static void test_decrypt_cbc(uint8_t *key, uint8_t *input);
@@ -32,6 +36,8 @@ int state = 0;
 
 volatile uint8_t adcValue = 0;
 volatile int j = 0;
+volatile int state2 = WAIT;
+bool bufferFull = false;
 
 int main() {
   init(); // Initialization due to use of Arduino libraries
@@ -59,7 +65,7 @@ int main() {
                     0x9c, 0xfc, 0x4e, 0x96, 0x7e, 0xdb, 0x80, 0x8d, 0x67, 0x9f, 0x77, 0x7b, 0xc6, 0x70, 0x2c, 0x7d,
                     0x39, 0xf2, 0x33, 0x69, 0xa9, 0xd9, 0xba, 0xcf, 0xa5, 0x30, 0xe2, 0x63, 0x04, 0x23, 0x14, 0x61,
                     0xb2, 0xeb, 0x05, 0xe2, 0xc3, 0x9b, 0xe9, 0xfc, 0xda, 0x6c, 0x19, 0x07, 0x8c, 0x6a, 0x9d, 0x1b };
-  uint8_t adcVal[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  volatile uint8_t adcVal[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -83,13 +89,32 @@ int main() {
      * 0 = Grab key size
      * 1 = Key is grabbed, do nothing unless program hasn't executed
      */
-     if (j < 64) {
-       adcVal[j] = ADCH;
-       j++;
+     switch(state2) {
+       case TIMER_INT:
+         if (j < BUFFER_SIZE) {
+          adcVal[j] = ADCH;
+          j++;
+         }
+         else {
+          j = 0;
+          bufferFull = true;
+         }
+         state = WAIT;
+       break;
      }
-     else {
+     if (bufferFull) {
+       // Begin encryption process
+       AES_init_ctx_iv(&ctx1, key, iv);
+       AES_CBC_encrypt_buffer(&ctx1, adcVal, 64);
+       while (j < BUFFER_SIZE) {
+         transmit_part(adcVal[j]);
+         j++;
+       }
        j = 0;
+       bufferFull = false;
      }
+
+    /*
     switch(state){
       case 0:
         setKey(key);
@@ -118,6 +143,7 @@ int main() {
         }
         break;
     }
+    */
   }
 
   return 0;
@@ -235,9 +261,9 @@ static void phex(uint8_t* str){
 // }
 
 
-// ISR(TIMER1_COMPA_vect){
-//   transmit_part(adcValue);
-// }
+ISR(TIMER1_COMPA_vect){
+  state = TIMER_INT;
+}
 
 /*
  * Interrupt for card detection, performs nothing when pin is high.
