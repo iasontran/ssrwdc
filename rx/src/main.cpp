@@ -43,6 +43,7 @@ volatile int received_cnt;
 int state = 0;
 
 volatile int j = 0;
+volatile int k = 0;
 uint8_t adcValue = 0;
 uint8_t adcValue2 = 0;
 volatile int state2 = WAIT;
@@ -147,6 +148,9 @@ int main() {
   circular_buf_reset(&rxCbuf); // set head/tail to 0
   rxCbuf.buffer = malloc(rxCbuf.size);
 
+  AES_init_ctx_iv(&ctx2, key, iv);
+  uint8_t decrypted[64];
+
   while(1) {
     /*
      * State Machine:
@@ -168,6 +172,15 @@ int main() {
           state = 0;  //If program hasnt executed properly go to state 0
           break;
         } else {
+          // If circular buffer is full, grab entire buffer and store in
+          // array for decryption and pass to decryption process
+          if (circular_buf_full(rxCbuf)) {
+            for (j = 0; j < BUFFER_SIZE; j++) {
+              circular_buf_get(&rxCbuf,  &adcVal[j]);
+            }
+            AES_CBC_decrypt_buffer(&ctx2, adcVal, 64);
+            memcpy(decrypted, adcVal, sizeof(adcVal));
+          }
           switch(state2){
             case MESSAGE_AVAILABLE:
               adcValue = receive_data();
@@ -177,23 +190,14 @@ int main() {
               state = WAIT;
             break;
             case TIMER_INT:
-              while(!circular_buf_empty(rxCbuf)) {
-                circular_buf_get(&rxCbuf,  &adcVal[j]);
-                j++;
+              PORTA = decrypted[k];
+              PORTC &= ~(1 << PORTC7);
+              PORTC |= (1 << PORTC7);
+              if (k == BUFFER_SIZE - 1) {
+                k = 0;
+              } else {
+                k++;
               }
-              AES_init_ctx_iv(&ctx2, key, iv);
-              AES_CBC_decrypt_buffer(&ctx2, adcVal, 64);
-              while(j < 64) {
-                if (adcVal[j] != NULL){
-                  PORTA = adcValue2;
-                  PORTC &= ~(1 << PORTC7);
-                  //_delay_us(125); //// need to adjust delay depending on how much delay comes
-                  // // // from the other programs
-                  PORTC |= (1 << PORTC7);
-                }
-                j++;
-              }
-              j = 0;
               state2 = WAIT;
             break;
           }
