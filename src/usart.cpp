@@ -2,7 +2,7 @@
 
 void initSerial(){
   // UBRRnL equation: UBRRnL = (f(clock))/(16*BAUD) - 1
-  UBRR0L = 8; // Baud rate 115200
+  UBRR0L = 3; // Baud rate 115200
   UCSR0B |= (1 << RXEN0 | 1 << TXEN0 | 1 << RXCIE0);// | 1 << RXCIE0); // Enable receiver and transmitter
   UCSR0C = (1 << USBS0) | (3 << UCSZ00); // Set frame format: 8 data, 2 stop bits
 }
