@@ -262,7 +262,7 @@ static void phex(uint8_t* str){
 
 
 ISR(TIMER1_COMPA_vect){
-  state = TIMER_INT;
+  state2 = TIMER_INT;
 }
 
 /*
