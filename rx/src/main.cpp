@@ -27,7 +27,7 @@
 #include <util/delay.h>
 #include "usart.h"
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 64
 #define WAIT 0
 #define MESSAGE_AVAILABLE 1
 #define TIMER_INT 2
