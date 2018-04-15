@@ -1,13 +1,11 @@
-// Author:
-// Net ID:
-// Date:
-// Assignment:     Lab 4
+// Author: Team 17052
+// Date:12/1/17
+// Assignment: Secure Wireless Protocol
 //
-// Description: This file contains a programmatic overall description of the
-// program. It should never contain assignments to special function registers
-// for the exception key one-line code such as checking the state of the pin.
-//
+// Description: This Program handles the encryption and decryption functions of
+//              the Secure Wireless Protocol Project
 // Requirements:
+//               Secure an audio signal for transmission
 //----------------------------------------------------------------------//
 
 //Begin Includes//
@@ -31,13 +29,6 @@ int main(void){
   uint8_t key[getKeySize()]; //key in uint8_t format
   uint8_t* ctx;
 
-
-  /*char* fileName = "Write.txt"; //File name here, must be small
-  char* fileValue = "Custom words";//whatever you want to write here
-      int n = 0;
-write(fileName,fileValue);
-}*/
-
 while(1){
 
   /*begin State Machine
@@ -47,11 +38,9 @@ while(1){
 
   switch(state){
     case 0:
-
     setKey(key);
     if(!isProgramExecuted())
     {
-
       state = 0;
       break;
     } //end if

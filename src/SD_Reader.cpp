@@ -9,8 +9,8 @@
 #include "SD_Reader.h"
   /*
    * SD card attached to SPI bus as follows:
-   ** DI - pin 51
-   ** DO - pin 50
+   ** MOSI - pin 51
+   ** MISO - pin 50
    ** CLK - pin 52
    ** CS - pin 53 (for MKRZero SD: SDCARD_SS_PIN)
    ** DO - PIN 50
