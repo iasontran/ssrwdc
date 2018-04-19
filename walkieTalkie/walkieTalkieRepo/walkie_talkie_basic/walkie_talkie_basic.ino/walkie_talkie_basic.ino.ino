@@ -1,4 +1,5 @@
 
+
 /*
   FILENAME:   walkie talkie basic.ino
   AUTHOR:     Orlando S. Hoilett
@@ -57,32 +58,93 @@ Input/Microphone: Analog pin A0 on all boards
 
 */
 
-
+#include <SD.h>
 #include <RF24.h>
 #include <SPI.h>
 #include <RF24Audio.h>
+#include <aes.hpp>
 #include "printf.h"    // General includes for radio and audio lib
 
 RF24 radio(48,49);    // Set radio up using pins 7 (CE) 8 (CS)
 RF24Audio rfAudio(radio,0); // Set up the audio using the radio, and set to radio number 0
-
+uint8_t keyOne[32]; //key in uint8_t format
 int talkButton = 3;
+File myFile;
+
 
 void setup() {      
   Serial.begin(115200);
-  
+ Serial.print("Initializing SD card...");
+
+  if (!SD.begin(53)) {
+    Serial.println("initialization failed!");
+    while (1);
+  }
+  Serial.println("initialization done.");
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+//  myFile = SD.open("test.txt", FILE_WRITE);
+//
+//  // if the file opened okay, write to it:
+//  if (myFile) {
+//    Serial.print("Writing to test.txt...");
+//    myFile.println("testing 1, 2, 3.");
+//    // close the file:
+//    myFile.close();
+//    Serial.println("done.");
+//  } else {
+//    // if the file didn't open, print an error:
+//    Serial.println("error opening test.txt");
+//  }
+
+//  
+
+//**************GET KEY******************
+
+   // open the file. *note that only one file can be open at a time,
+   // so you **have** to close this one before opening another.
+
+   myFile = SD.open("test.txt", FILE_READ); //open file
+   int i = 0; // loop variabl
+
+   // if the file opened okay, read from it:
+   if (myFile) {
+     Serial.println("Reading from test.txt...");
+
+     while (myFile.available()) {
+       //as long as there is something to read, store it in key
+       if(i<32){
+         keyOne[i] = myFile.read(); //note multiple keys may be stored in key
+         i++;
+       }
+       else{
+        i=0;
+       }
+       break;
+       }
+      }
+
+     
+     Serial.println("KEY:");
+     for(int k=0; k<32;k++){
+      Serial.print(keyOne[k]);
+     }
+     Serial.println(" ");
+
   printf_begin();
   radio.begin();
   radio.printDetails();
   rfAudio.begin();
 
-  pinMode(talkButton, INPUT);
+  //pinMode(talkButton, INPUT);
 
   //sets interrupt to check for button talk abutton press
-  attachInterrupt(digitalPinToInterrupt(talkButton), talk, CHANGE);
+  //attachInterrupt(digitalPinToInterrupt(talkButton), talk, CHANGE);
   
   //sets the default state for each module to recevie
-  rfAudio.receive();
+ //rfAudio.receive();
+  rfAudio.transmit();
 }
 
 
@@ -90,13 +152,14 @@ void setup() {
 //Called in response to interrupt. Checks the state of the button.
 //If the button is pressed (and held) enters transmit mode to send
 //audio. If button is release, enters receive mode to listen.
+/*
 void talk()
 {
   if (digitalRead(talkButton)) rfAudio.transmit();
   else rfAudio.receive();
 }
 
-
+*/
 void loop()
 {
 }
