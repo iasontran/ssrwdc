@@ -8,11 +8,22 @@
 #endif
 
 #include <stddef.h>
-
+#include<aes.hpp>
 #include "RF24Audio.h"
 #include "RF24.h"
 #include <userConfig.h>
 
+
+// added for encryption
+
+uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+
+uint8_t key[32];// = { 0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81, 0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };              
+  //uint8_t* ctx;
+  //uint8_t *text;
+  struct AES_ctx ctx;
+ // struct AES_ctx ctx2;
+  
 //******* General Variables ************************
 
 volatile boolean buffEmpty[2] = {true,true}, whichBuff = false, a, lCntr=0, streaming = 0, transmitting = 0;
@@ -48,7 +59,14 @@ RF24Audio::RF24Audio(RF24& _radio, byte radioNum): radio(_radio){
 	radioIdentifier = radioNum;
 }
 
-void RF24Audio::begin(){
+void RF24Audio::begin(uint8_t keyArr[32]){
+  int j = 0;
+  for(j=0;j<32;j++){
+	  key[j] = keyArr[j];
+	  Serial.println(key[j], BIN);
+  }
+  //AES_init_ctx_iv(&ctx, key, iv);        //These two lines for encryption
+  //AES_init_ctx_iv(&ctx2, key, iv);        //These two lines for encryption
 
   radio.begin();
   //delay(500);
@@ -71,7 +89,7 @@ void RF24Audio::begin(){
 
 
 
-  radio.setChannel(1);                 // Set RF channel to 1
+  radio.setChannel(111);                 // Set RF channel to 1*******************************CHANGE CHANNEL HERE*************************************
   radio.setAutoAck(0);                 // Disable ACKnowledgement packets
   radio.setDataRate(RF_SPEED);         // Set data rate as specified in user options
   radio.setCRCLength(RF24_CRC_8);
@@ -91,7 +109,7 @@ void RF24Audio::begin(){
 
 
 //General functions for volume control
-
+/*
 void vol(bool upDn){
     if(upDn==1){ volMod++;}
     else{ volMod--; }
@@ -104,7 +122,7 @@ void RF24Audio::volume(bool upDn){
 void RF24Audio::setVolume(char vol) {
     volMod = vol - 4 ;
 }
-
+*/
 void RF24Audio::timerStart(){
     ICR1 = 10 * (1600000/SAMPLE_RATE);                  //Timer will count up to this value from 0;
     TCCR1A = _BV(COM1A1) | _BV(COM1B0) | _BV(COM1B1);  //Enable the timer port/pin as output
@@ -132,6 +150,7 @@ void handleButtons(){
     }
   }
 
+  
   if(!digitalRead(VOL_UP_PIN)){                 //If the volume pin is high, raise the volume
     if(millis()-volTime > 200){                //De-bounce of buttons by 200ms
         vol(1); volTime = millis();
@@ -164,7 +183,7 @@ void handleButtons(){
 
 
 void rampDown(){
-            int current = OCR1A;
+            /*int current = OCR1A;
             if(current > 0){
                 for(int i=0; i < ICR1; i++){
 	        #if defined(rampMega)
@@ -175,16 +194,17 @@ void rampDown(){
 	          OCR1A = constrain((current - i),0,ICR1);
 	        #endif
 	        //for(int i=0; i<10; i++){ while(TCNT1 < ICR1-50){} }
-                delayMicroseconds(100);
+               // delayMicroseconds(100);********************************faster popping now but not as loud*******8
 	      }
             }
+			*/
 
 }
 
 
 void rampUp(byte nextVal){
-
-            /*int current = OCR1A;
+/*
+            int current = OCR1A;
             if(current > 0){
                 for(int i=0; i < ICR1; i++){
 	        #if defined(rampMega)
@@ -197,12 +217,13 @@ void rampUp(byte nextVal){
 	        //for(int i=0; i<10; i++){ while(TCNT1 < ICR1-50){} }
                 delayMicroseconds(100);
 	      }
-            }*/
+            }
 
             //digitalWrite(12,HIGH);
 
-
+*/
 	#if defined(rampMega)
+	/*
 			unsigned int resolution = ICR1;
 
 			OCR1A = 0; OCR1B = resolution;
@@ -220,12 +241,14 @@ void rampUp(byte nextVal){
 
 			//}
 			}
+			*/
 
 	#endif
 
 
 	byte tmp = 200;
 	unsigned int mod;
+	/*
 	if(volMod > 0){ mod = OCR1A >> volMod; }else{ mod = OCR1A << (volMod*-1); }
 	if(tmp > mod){
 		for(unsigned int i=0; i<buffSize; i++){ mod = constrain(mod+1,mod, tmp); buffer[0][i] = mod; }
@@ -234,6 +257,7 @@ void rampUp(byte nextVal){
 		for(unsigned int i=0; i<buffSize; i++){ mod = constrain(mod-1,tmp ,mod); buffer[0][i] = mod; }
 		for(unsigned int i=0; i<buffSize; i++){ mod = constrain(mod-1,tmp, mod); buffer[1][i] = mod; }
 	}
+	*/
 	whichBuff = 0; buffEmpty[0] = 0; buffEmpty[1] = 0; buffCount = 0;
 
 }
@@ -247,9 +271,9 @@ void RF24Audio::receive(){
 }
 
 #if !defined MANUAL_BUTTON_HANDLING					// Allows users to totally customize button handling or disable it
-	ISR(TIMER0_COMPB_vect){						// Non-blocking interrupt vector for button management. Is triggered ~1000 times/second by default on Arduino
-		handleButtons();							// Check for external button presses at the default timer0 rate
-	}
+	//ISR(TIMER0_COMPB_vect){						// Non-blocking interrupt vector for button management. Is triggered ~1000 times/second by default on Arduino
+		//handleButtons();							// Check for external button presses at the default timer0 rate
+	//}
 #endif
 
 
@@ -270,23 +294,34 @@ void handleRadio(){
 		  boolean n=!whichBuff;						// Grab the changing value of which buffer is not being read before enabling nested interrupts
           TIMSK1 &= ~_BV(ICIE1);					// Disable this interrupt so it is not triggered while still running (this may take a while)
 	 	  sei();									// Enable nested interrupts (Other interrupts can interrupt this one)
-          radi.read(&buffer[n],32);					// Read the payload from the radio
+          radi.read(&buffer[n],32);			  // Read the payload from the radio
+		  //***************DECRYPTION**************8888
+		  AES_init_ctx_iv(&ctx, key, iv);        //These two lines for encryption
+		  AES_CBC_decrypt_buffer(&ctx, buffer[!whichBuff], 32);
+		 // Serial.println("Recieved Buffer");
+		 // for(int i =0; i <32; i++){
+		 // Serial.print(buffer[!whichBuff][i]);
+		 //Serial.print(" ");}
+		 // Serial.println(" ");
+		 
+		  
+		  //----------------------//
+		  //*******************************************
           buffEmpty[n] = 0;                   		// Indicate that a buffer is now full and ready to play
           pauseCntr = 0;                            // For disabling speaker when no data is being received
 
           TIMSK1 |= _BV(ICIE1);						// Finished, re-enable the interrupt vector that runs this function
       }else{ pauseCntr++; }                         // No payload available, keep track of how many for disabling the speaker
-      if(pauseCntr > 50){							// If we failed to get a payload 250 times, disable the speaker output
+     /* if(pauseCntr > 50){							// If we failed to get a payload 250 times, disable the speaker output
 		  pauseCntr = 0;							// Reset the failure counter
 		  rampDown();								// Ramp down the speaker (prevention of popping sounds)
 		  streaming = 0;							// Indicate that streaming is stopped
-		  TIMSK1 &= ~(_BV(TOIE1) );					// Disable the TIMER1 overflow vector (playback)
+		 // TIMSK1 &= ~(_BV(TOIE1) );					// Disable the TIMER1 overflow vector (playback)
 		  #if defined (ENABLE_LED)
-          digitalWrite(ledPin, LOW);
-		  //TCCR0A &= ~_BV(COM0A1);					// Disable the TIMER0 LED visualization
+		  TCCR0A &= ~_BV(COM0A1);					// Disable the TIMER0 LED visualization
 		  #endif
-		  TCCR1A &= ~(_BV(COM1A1) | _BV(COM1B1) | _BV(COM1B0)); // Disable speaker output
-	  }
+		  //TCCR1A &= ~(_BV(COM1A1) | _BV(COM1B1) | _BV(COM1B0)); // Disable speaker output
+	  }*/
   }else
 
   if(!streaming){                  					// If not actively reading a stream, read commands instead
@@ -310,8 +345,7 @@ void handleRadio(){
    				   //buffEmpty[1] = true;
           		   TIMSK1 |= _BV(TOIE1);			// Enable the overflow vector
           		   #if defined (ENABLE_LED)
-                   digitalWrite(ledPin, HIGH);
-          		   //TCCR0A |= _BV(COM0A1);			// Enable the LED visualization output
+          		   TCCR0A |= _BV(COM0A1);			// Enable the LED visualization output
           		   #endif
 				   break;
 
@@ -380,6 +414,7 @@ ISR(TIMER1_OVF_vect){                                      				// This interrupt
 
 	#if !defined (tenBit)
 /*************** Standard 8-Bit Audio Playback ********************/
+
   	  if(volMod < 0 ){                                         			 //Load an audio sample into the timer compare register
   		  OCR1A = OCR1B = (buffer[whichBuff][intCount] >> volMod*-1);    //Output to speaker at a set volume
   	  }else{
@@ -455,7 +490,8 @@ void RF24Audio::broadcast(byte radioID){
   //Transmission sending interrupt
   ISR(TIMER1_COMPA_vect){                                    		 // This interrupt vector sends the samples when a buffer is filled
 	 if(buffEmpty[!whichBuff] == 0){                      			 // If a buffer is ready to be sent
-	 		a = !whichBuff;                      					 // Get the buffer # before allowing nested interrupts
+	 		a = !whichBuff;                                		   	 // Get the buffer # before allowing nested interrupts
+			
    			TIMSK1 &= ~(_BV(OCIE1A));            					 // Disable this interrupt vector
    			sei();                               					 // Allow other interrupts to interrupt this vector (nested interrupts)
             //radi.startFastWrite(&buffer[a],32);
@@ -513,6 +549,11 @@ void RF24Audio::broadcast(byte radioID){
         bytePos = 25;                                    // Reset the position for the extra 2 bits to the 25th byte
         bitPos = 0;                                      // Reset the bit position for the extra 2 bits
     #endif
+        
+		//*****ENCRYPTION*******************************
+		AES_init_ctx_iv(&ctx, key, iv);        //These two lines for encryption
+		AES_CBC_encrypt_buffer(&ctx, buffer[whichBuff], 32); //-------last number is size of input------------------//
+		//**********************************************
 
     	//Both modes
 	  	buffCount = 0;                                   // Reset the sample counter
@@ -526,8 +567,7 @@ void TX(){
 
 		TIMSK1 &= ~(_BV(ICIE1) | _BV(TOIE1));				 // Disable the receive interrupts
 		#if defined (ENABLE_LED)
-        digitalWrite(ledPin, LOW);
-		//TCCR0A &= ~_BV(COM0A1);								 // Disable LED visualization
+		TCCR0A &= ~_BV(COM0A1);								 // Disable LED visualization
 		#endif
         radi.openWritingPipe(pipes[1]);   				 	 // Set up reading and writing pipes
         radi.openReadingPipe(1,pipes[0]);

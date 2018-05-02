@@ -7,8 +7,8 @@
  // Maximum Range: Sample rate 16000, RF_SPEED RF24_250KBPS
  // Maximum Quality: Sample rate 44000, RF_SPEED RF24_2MBPS
 
-#define SAMPLE_RATE 24000                     // The sample rate to use for transferring audio samples  Note: 44khz+ sample rate requires 8-bits per sample
-#define RF_SPEED RF24_1MBPS                   // RF24_250KBPS will do 13-20khz+ sample rate, RF24_1MBPS up to 24-44khz+, RF24_2MBPS for higher. These are not limits, just a guide.
+#define SAMPLE_RATE 9000                     // The sample rate to use for transferring audio samples  Note: 44khz+ sample rate requires 8-bits per sample
+#define RF_SPEED RF24_2MBPS                   // RF24_250KBPS will do 13-20khz+ sample rate, RF24_1MBPS up to 24-44khz+, RF24_2MBPS for higher. These are not limits, just a guide.
 #define ANALOG_PIN A0                         // The pin that analog readings will be taken from (microphone pin)
 
 /************ OverRides *************************/
@@ -23,7 +23,7 @@
 
 /***************** Optional/Advanced User Variables ******/
 
-//#define MANUAL_BUTTON_HANDLING			  // Disables button handling via timer0. Allow users to customize button handling
+#define MANUAL_BUTTON_HANDLING			  // Disables button handling via timer0. Allow users to customize button handling
 #define TX_PIN A1                             // Button pin to trigger recording & transmission
 #define VOL_UP_PIN A2                         // Pin for external volume control
 #define VOL_DN_PIN A3                         // Pin for external volume control

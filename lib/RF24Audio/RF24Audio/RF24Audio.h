@@ -23,6 +23,7 @@ class RF24Audio
 {
 
 public:
+
   /**
    * Setup the radio and radio identifier
    * @note Changing radioNum is only required if utilizing private node-to-node communication as
@@ -46,7 +47,7 @@ public:
    *	rfAudio.begin();
    * @endcode
    */
-	void begin();
+	void begin(uint8_t keyArr[32]);
 
   /**
    * Volume Control
@@ -67,7 +68,6 @@ public:
    *
    */
 	void setVolume(char vol);
-
   /**
    * Control transmission through code
    * @code
